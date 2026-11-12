@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Search | OMNIA Connect prototype (dev)</title>
+<style>
+:root{
+  --navy:#222742;--royal:#007CBD;--sky:#99DBFF;--sky-tint:#E6F5FF;--floral:#FFF8EB;--white:#FFFFFF;--yellow:#F4C849;--yellow-tint:#FDF1C8;
+  --text:var(--navy);--text-2:#4A4F6B;--ctl-border:#6B7089;--line:#DDD9CF;--danger:#A32D2D;--success:#2E6B1E;
+  --font-head:"Figtree","Open Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-body:"Open Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --fs-sm:.875rem;--fs-md:1rem;--fs-lg:1.125rem;--fs-xl:1.75rem;
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;
+  --r-ctl:8px;--r-card:12px;--r-pill:999px;--target:32px;--target-lg:44px;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:16px}
+body{margin:0;background:var(--floral);color:var(--text);font:400 var(--fs-md)/1.55 var(--font-body)}
+h1,h2,h3{font-family:var(--font-head);margin:0}
+h1{font-size:var(--fs-xl);font-weight:700;line-height:1.2}
+h2{font-size:var(--fs-lg);font-weight:600}
+h3{font-size:var(--fs-md);font-weight:600}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip{position:absolute;left:8px;top:-60px;background:var(--navy);color:#fff;padding:10px 16px;border-radius:var(--r-ctl);z-index:10;font-weight:600}
+.skip:focus{top:8px}
+:focus-visible{outline:3px solid var(--navy);outline-offset:2px;border-radius:4px}
+.shell{background:var(--white);border-bottom:1px solid var(--line);padding:var(--s3) var(--s4);color:var(--text-2);font-size:var(--fs-sm)}
+.app{max-width:1100px;margin:0 auto}
+.lead{color:var(--text-2);font-size:var(--fs-sm);margin:var(--s2) 0 var(--s4)}
+.ic{vertical-align:-2px;flex:none}
+button{font:inherit;cursor:pointer;background:var(--white);border:1px solid var(--ctl-border);border-radius:var(--r-pill);padding:6px 16px;min-height:var(--target);color:var(--text)}
+button:hover{background:var(--sky-tint)}
+button.primary{background:var(--navy);color:#fff;border-color:var(--navy);min-height:var(--target-lg);padding:8px 24px;font-weight:600}
+button.primary:hover{background:#363c5e}
+.mk{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;border-radius:50%;background:var(--navy);color:#fff;font-size:var(--fs-sm);font-weight:700;margin-left:6px;flex:none;vertical-align:middle;font-style:normal}
+.banner{background:var(--sky);color:var(--navy);border-radius:var(--r-card);padding:var(--s3) var(--s4);margin-bottom:var(--s3);display:flex;gap:var(--s3);align-items:flex-start;font-size:var(--fs-sm)}
+.banner h2{font-size:var(--fs-md)}
+.banner .x{margin-left:auto;border:none;background:transparent;border-radius:var(--r-ctl);min-width:var(--target);padding:4px}
+.banner .x:hover{background:rgba(255,255,255,.5)}
+.panel{background:var(--white);border:1px solid var(--line);border-radius:var(--r-card);padding:var(--s4)}
+.fields{display:grid;grid-template-columns:1fr;gap:var(--s3);align-items:end}
+.fields>div{min-width:0}
+.more{display:contents}
+.linkbtn{background:transparent;border:none;border-radius:var(--r-ctl);padding:4px 8px;min-height:var(--target);color:var(--text);text-decoration:underline;text-underline-offset:3px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.linkbtn:hover{background:var(--sky-tint)}
+.filt-btn{margin-left:auto}
+.filt-btn[aria-expanded=true] .ic{transform:rotate(180deg)}
+.mid,.extra{display:none}
+.mid{display:contents}
+.fopen .extra{display:contents}
+fieldset.rng{border:0;margin:0;padding:0;min-width:0}
+legend.lab{padding:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2)}
+input[type=date]{width:100%;font:inherit;min-height:var(--target-lg);padding:8px 12px;border:1px solid var(--ctl-border);border-radius:var(--r-ctl);background:#fff;color:var(--text)}
+.chips{list-style:none;margin:var(--s3) 0 0;padding:0;display:flex;gap:var(--s2);flex-wrap:wrap}
+.chips:empty{display:none}
+.chipx{display:inline-flex;align-items:center;gap:4px;background:var(--sky-tint);border:1px solid var(--royal);border-radius:var(--r-pill);padding:0 4px 0 12px;font-size:var(--fs-sm)}
+.actions{grid-column:1/-1;display:flex;align-items:center;gap:var(--s3);flex-wrap:wrap}
+@container (min-width:600px){.fields{grid-template-columns:1fr 1fr}}
+@container (min-width:900px){.fields{grid-template-columns:1fr 1fr 1fr}}
+@container (max-width:599px){.mid{display:none}.fopen .mid{display:contents}.actions{flex-direction:column;align-items:stretch;gap:var(--s2)}.actions button.primary{width:100%}.actions .linkbtn.clr{align-self:center;min-height:var(--target-lg);padding:8px 24px}}
+.linkbtn.clr{font-weight:400}
+.filt-btn.asbar{grid-column:1/-1;margin-left:0;width:100%;justify-content:space-between;background:#fff;border:1px solid var(--ctl-border);border-radius:var(--r-ctl);min-height:var(--target-lg);padding:8px 12px;text-decoration:none}
+.filt-btn.asbar:hover{background:var(--sky-tint)}
+select{width:100%;font:inherit;min-height:var(--target-lg);padding:8px 12px;border:1px solid var(--ctl-border);border-radius:var(--r-ctl);background:#fff;color:var(--text)}
+.tabs{display:flex;gap:var(--s2);border-bottom:1px solid var(--line);margin-bottom:var(--s4)}
+.tabs button{border:none;border-bottom:3px solid transparent;border-radius:0;background:transparent;font-weight:600;min-height:var(--target-lg);padding:8px 16px}
+.tabs button:hover{background:var(--sky-tint)}
+.tabs button[aria-selected=true]{border-bottom-color:var(--navy)}
+.lab{display:flex;align-items:center;gap:var(--s2);font-size:var(--fs-sm);color:var(--text-2);margin-bottom:var(--s1);font-weight:600}
+.ms{position:relative}
+.msb{width:100%;display:flex;justify-content:space-between;align-items:center;gap:var(--s2);border-radius:var(--r-ctl);min-height:var(--target-lg);padding:8px 12px;text-align:left;background:#fff}
+.msp{position:absolute;z-index:5;left:0;right:0;top:100%;margin-top:4px;background:#fff;border:1px solid var(--ctl-border);border-radius:var(--r-ctl);padding:var(--s2);max-height:320px;overflow:auto;box-shadow:0 4px 12px rgba(34,39,66,.15)}
+.msp[hidden],.help[hidden]{display:none}
+.msp ul{list-style:none;margin:var(--s2) 0 0;padding:0}
+.opt{display:flex;gap:var(--s2);align-items:center;min-height:var(--target);margin:0;font-weight:400;color:var(--text);font-size:var(--fs-md)}
+.opt input{width:20px;height:20px;flex:none;accent-color:var(--navy)}
+.help{margin:var(--s1) 0 0;font-size:var(--fs-sm);color:var(--text-2)}
+.prevw{display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap;margin-bottom:var(--s3);font-size:var(--fs-sm);color:var(--text-2)}
+.prevw button[aria-pressed=true]{background:var(--navy);color:#fff;border-color:var(--navy);font-weight:600}
+.orgline{margin-top:var(--s2);font-size:var(--fs-sm)}
+.cpanel-lead{margin:0 0 var(--s3);font-size:var(--fs-sm);color:var(--text-2)}
+label{display:block;font-size:var(--fs-sm);color:var(--text-2);margin-bottom:var(--s1);font-weight:600}
+input[type=text]{width:100%;font:inherit;min-height:var(--target-lg);padding:8px 12px;border:1px solid var(--ctl-border);border-radius:var(--r-ctl);background:#fff;color:var(--text)}
+input[type=text]::placeholder{color:var(--text-2);opacity:1}
+.formerr{color:var(--danger);font-size:var(--fs-sm);margin-top:var(--s2);font-weight:600}
+.presets{margin-top:var(--s3);display:flex;gap:var(--s2);flex-wrap:wrap;align-items:center;font-size:var(--fs-sm);color:var(--text-2)}
+.presets button{font-size:var(--fs-sm)}
+.toast{margin-top:var(--s3);background:var(--navy);color:#fff;border-radius:var(--r-ctl);padding:var(--s2) var(--s3);font-size:var(--fs-sm)}
+.legend{margin-top:var(--s5);background:var(--yellow-tint);border:1px solid var(--yellow);border-radius:var(--r-card);padding:var(--s3) var(--s4);font-size:var(--fs-sm)}
+.legend .lt{display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap;margin-bottom:var(--s2)}
+.legend .lt button{margin-left:auto}
+.legend ol{margin:0;padding:0;list-style:none}
+.legend li{display:flex;gap:var(--s2);padding:3px 0;align-items:flex-start}
+.legend li .mk{margin:0}
+.bar{display:flex;gap:var(--s3);align-items:center;margin:var(--s5) 0 var(--s3);flex-wrap:wrap}
+.bar h2{font-size:var(--fs-md);font-weight:600}
+.bar .sp2{flex:1}
+.seg{display:inline-flex;border:1px solid var(--ctl-border);border-radius:var(--r-pill);overflow:hidden;background:#fff}
+.seg button{border:none;border-radius:0;padding:4px 16px;background:#fff}
+.seg button[aria-pressed=true]{background:var(--navy);color:#fff;font-weight:600}
+ul.fams,ul.tree,ul.crows{list-style:none;margin:0;padding:0}
+.fam{background:var(--white);border:1px solid var(--line);border-radius:var(--r-card);padding:var(--s3);margin-bottom:var(--s3)}
+.ctx.nest{margin-top:var(--s2);border:1px solid var(--line);border-radius:var(--r-ctl);padding:var(--s2) var(--s3);background:#fff}
+.ch{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;margin-bottom:2px}
+.ch h3{font-size:var(--fs-md)}
+.hint,.mut{color:var(--text-2);font-size:var(--fs-sm)}
+.tree{margin:var(--s2) 0 0 var(--s2);border-left:2px solid var(--line);padding-left:var(--s3)}
+.tree>li+li{margin-top:var(--s2)}
+.ib{background:transparent;border:none;padding:0;border-radius:var(--r-ctl);color:var(--navy);min-width:var(--target);min-height:var(--target);display:inline-flex;align-items:center;justify-content:center}
+.ib:hover{background:var(--sky-tint)}
+a.lk{color:var(--text);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;font-weight:600}
+a.lk:hover{text-decoration-thickness:3px}
+a.lk .ic{margin-left:4px}
+a.addr{font-weight:400;color:var(--text)}
+a.addr .ic{margin:0 4px 0 0}
+a.lk.royal{color:var(--royal)}
+.match{background:var(--sky-tint);border:2px solid var(--royal);border-radius:var(--r-ctl);padding:var(--s3)}
+.mh{display:flex;justify-content:space-between;gap:var(--s3);align-items:flex-start;flex-wrap:wrap}
+.nm{font-size:var(--fs-lg);font-weight:600}
+.sub{font-size:var(--fs-sm);color:var(--text-2)}
+.sub a.addr{color:var(--text-2)}
+.badge{font-size:var(--fs-sm);background:var(--sky);color:var(--navy);padding:2px 12px;border-radius:var(--r-pill);white-space:nowrap;display:inline-flex;align-items:center;font-weight:600}
+.why{margin-top:var(--s2);font-size:var(--fs-sm);display:flex;gap:6px;align-items:center}
+.why .ic{color:var(--success)}
+.kc{margin-top:var(--s3);padding-top:var(--s2);border-top:1px solid var(--royal)}
+.kt{background:transparent;border:none;padding:0 var(--s2) 0 0;color:var(--navy);font-size:var(--fs-sm);font-weight:600;display:inline-flex;gap:6px;align-items:center;min-height:var(--target);border-radius:var(--r-ctl)}
+.kt:hover{text-decoration:underline;text-decoration-thickness:2px;background:transparent}
+.kt.royal{color:var(--royal);margin-top:var(--s2)}
+.kb{margin-top:var(--s2);background:#fff;border:1px solid var(--line);border-radius:var(--r-ctl);padding:var(--s1) 0}
+.crow{display:flex;align-items:center;gap:var(--s2);padding:4px var(--s3);font-size:var(--fs-sm);border-top:1px solid var(--line);flex-wrap:wrap}
+.crow:first-child{border-top:none}
+.crow.hit{background:var(--sky-tint)}
+.crow .r{margin-left:auto;display:flex;gap:var(--s2);align-items:center}
+.chip{font-size:var(--fs-sm);padding:1px 10px;border-radius:var(--r-pill);background:var(--sky);color:var(--navy);font-weight:600;white-space:nowrap}
+.chip.t-similar{background:var(--yellow)}
+.more{font-size:var(--fs-sm);color:var(--royal);font-weight:600;border-color:var(--royal)}
+.openfam{display:block;padding:4px var(--s3) var(--s2);font-size:var(--fs-sm)}
+.narrow{background:var(--sky-tint);color:var(--navy);border-radius:var(--r-ctl);padding:var(--s2) var(--s3);font-size:var(--fs-sm);margin-bottom:var(--s3);display:flex;gap:var(--s2);align-items:center}
+.state{background:var(--white);border:1px solid var(--line);border-radius:var(--r-card);padding:var(--s5);margin-top:var(--s5)}
+.state p{margin:var(--s1) 0 var(--s3);color:var(--text-2);font-size:var(--fs-sm)}
+.state.err{border:2px solid var(--danger)}
+.state.err h2{color:var(--danger)}
+.sk{height:10px;border-radius:4px;background:var(--line);margin-bottom:var(--s2)}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-card);background:#fff}
+table{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+caption{text-align:left}
+th{text-align:left;font-weight:600;color:var(--text-2);padding:var(--s2) var(--s3);background:var(--floral);border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:6px var(--s3);border-top:1px solid var(--line);vertical-align:middle}
+tr.subrow td{background:var(--floral);color:var(--text-2)}
+.cover{margin-top:40px}
+.cover h2{margin-bottom:var(--s1)}
+.rules{background:var(--white);border:1px solid var(--line);border-radius:var(--r-card);padding:var(--s3) var(--s4);margin-bottom:var(--s3);font-size:var(--fs-sm)}
+.rules ul,.case ul{margin:6px 0 0;padding-left:20px}
+.rules li,.case li{margin:3px 0}
+.case{background:var(--white);border:1px solid var(--line);border-radius:var(--r-card);padding:var(--s3) var(--s4);margin-bottom:var(--s3);font-size:var(--fs-sm)}
+.ct{display:flex;align-items:center;gap:var(--s3);flex-wrap:wrap}
+.ct .n{width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+.ct h3{font-size:var(--fs-md)}
+.ct .tries{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.ct .tries button{font-size:var(--fs-sm)}
+.lab2{color:var(--text-2);margin-top:var(--s2);font-weight:600}
+.a11yq{margin-top:var(--s2);background:var(--sky-tint);border-radius:var(--r-ctl);padding:var(--s2) var(--s3)}
+.openq{margin-top:var(--s2);background:var(--yellow-tint);border:1px solid var(--yellow);border-radius:var(--r-ctl);padding:var(--s2) var(--s3)}
+.demo{margin-top:var(--s4);font-size:var(--fs-sm);display:flex;gap:var(--s5);flex-wrap:wrap}
+.demo label{display:flex;gap:var(--s2);align-items:center;color:var(--text);margin:0;font-weight:400;min-height:var(--target)}
+.demo input{width:20px;height:20px}
+.foot{margin-top:var(--s4);font-size:var(--fs-sm);color:var(--text-2)}
+.spec{margin-top:40px}
+.spec h3{margin:var(--s5) 0 var(--s2)}
+.spec table{background:#fff;border:1px solid var(--line)}
+.sw{display:inline-block;width:20px;height:20px;border-radius:4px;border:1px solid var(--ctl-border);vertical-align:-5px;margin-right:8px}
+.pass{font-weight:700;color:var(--success)}
+.fail{font-weight:700;color:var(--danger)}
+.plain .dev{display:none!important}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+/* ---- prototype shell, Home and Search pages ---- */
+.wrap{max-width:1100px;margin:0 auto;padding:0 var(--s4);container-type:inline-size}
+#frame{background:var(--floral);margin:0 auto}
+#frame.framed{box-shadow:0 0 0 1px var(--ctl-border)}
+body.emu{background:#E9E4D8}
+.devbar{position:sticky;top:0;z-index:30;background:var(--navy);color:#fff;padding:var(--s2) var(--s4);display:flex;gap:var(--s2) var(--s4);flex-wrap:wrap;align-items:center;font-size:var(--fs-sm)}
+.devbar .grp{display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap}
+.devbar button{background:transparent;color:#fff;border-color:#fff;min-height:var(--target);padding:2px 14px}
+.devbar button:hover{background:#363c5e}
+.devbar button[aria-pressed=true]{background:#fff;color:var(--navy);font-weight:600}
+.devbar a{color:#fff;font-weight:600}
+.topbanner{background:var(--royal);color:#fff;text-align:center;padding:8px 48px;position:relative;font-size:var(--fs-sm)}
+.topbanner button{position:absolute;right:8px;top:2px;background:transparent;border:none;color:#fff;min-width:var(--target)}
+.userbar{background:var(--sky);color:var(--navy);padding:4px var(--s4);font-size:var(--fs-sm);display:flex;justify-content:flex-end;gap:var(--s2);align-items:center}
+.avatar{display:inline-flex;width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;font-size:12px;align-items:center;justify-content:center;font-weight:700}
+.hdr{background:#fff;border-bottom:1px solid var(--line)}
+.hdr .wrap{display:flex;gap:var(--s4);align-items:center;flex-wrap:wrap;padding-top:var(--s3);padding-bottom:var(--s3)}
+.logo{font-family:var(--font-head);font-weight:700;letter-spacing:.04em;display:flex;align-items:center;gap:var(--s2)}
+.logo .thin{font-weight:400}
+.pill-dev{background:var(--success);color:#fff;border-radius:var(--r-pill);padding:0 10px;font-size:12px;font-weight:700}
+.nav{display:flex;gap:var(--s1);flex-wrap:wrap}
+.nav a{padding:6px 12px;border-radius:var(--r-pill);color:var(--navy);font-weight:600;font-size:var(--fs-sm);text-decoration:none}
+.nav a:hover{background:var(--sky-tint)}
+.nav a[aria-current=page]{background:var(--sky-tint);text-decoration:underline;text-underline-offset:4px}
+#navnote{font-size:var(--fs-sm);color:var(--text-2)}
+.band{background:var(--sky-tint);padding:var(--s5) 0}
+.band h1{margin-bottom:var(--s3)}
+.pagebody{padding:var(--s5) 0 64px}
+.pagebody h2.sec{font-size:var(--fs-xl);margin:var(--s6) 0 var(--s3);font-weight:700}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r-card);padding:var(--s4)}
+.ph{background:linear-gradient(135deg,var(--navy),var(--royal));color:#fff;border-radius:var(--r-ctl);display:flex;align-items:center;justify-content:center;text-align:center;padding:var(--s4);font-family:var(--font-head);font-weight:600;min-height:140px}
+.bulletin{display:grid;grid-template-columns:260px 1fr;gap:var(--s5);align-items:start}
+.savedhdr{background:var(--navy);color:#fff;border-radius:var(--r-card) var(--r-card) 0 0;padding:var(--s3) var(--s4);font-family:var(--font-head);font-size:var(--fs-lg);font-weight:600}
+.savedrow{background:var(--sky-tint);border:1px solid var(--navy);border-top:none;border-radius:0 0 var(--r-card) var(--r-card);padding:var(--s3) var(--s4);display:flex;gap:var(--s5);flex-wrap:wrap}
+.two-up{display:grid;grid-template-columns:1fr 1fr;gap:var(--s5)}
+@container (max-width:699px){.bulletin,.two-up{grid-template-columns:1fr}}
+.footer{background:var(--navy);color:#fff;padding:var(--s6) 0;font-size:var(--fs-sm)}
+.footer .wrap{display:flex;gap:var(--s6);flex-wrap:wrap;justify-content:space-between}
+.footer a{color:#fff}
+.docw-old{}
+.docw h2{margin:var(--s6) 0 var(--s2)}
+.docw .rules h3{margin:var(--s3) 0 var(--s1);font-size:var(--fs-md)}
+.docw .rules ul{margin:0 0 var(--s2)}
+.rid{font-weight:700;color:var(--text-2);margin-right:6px}
+
+/* ---- boundary: dev tools and docs are amber, dashed and labelled; the prototype is framed in royal blue ---- */
+:root{--dev:#8A6100;--dev-bg:#FFF1BF;--dev-bg2:#FFF8DE}
+.dt{display:inline-block;background:var(--dev);color:#fff;font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:2px 10px;border-radius:var(--r-pill);white-space:nowrap}
+.devbar{background:var(--dev-bg);color:var(--navy);border-bottom:3px dashed var(--dev)}
+.devbar button{color:var(--navy);border-color:var(--navy);background:#fff}
+.devbar button:hover{background:var(--sky-tint)}
+.devbar button[aria-pressed=true]{background:var(--navy);color:#fff}
+.devbar a{color:var(--navy);text-decoration:underline}
+.devbar label{display:flex;gap:6px;align-items:center;margin:0;font-weight:400;min-height:var(--target)}
+.devbar input[type=checkbox]{width:20px;height:20px}
+.pstrip{background:var(--dev-bg);border:3px dashed var(--dev);color:var(--navy);padding:var(--s2) var(--s4);font-size:var(--fs-sm);display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap}
+#frame{border:4px solid var(--royal);box-sizing:border-box}
+.mk{background:var(--dev);color:#fff;box-shadow:0 0 0 2px var(--dev-bg)}
+.legend{background:var(--dev-bg);border:3px dashed var(--dev)}
+.legend .dt{margin-right:var(--s2)}
+.phzone{margin-top:var(--s5)}
+.phzone>.dt{margin-bottom:var(--s2)}
+.phzone .pnote{font-size:var(--fs-sm);margin:0 0 var(--s3)}
+.docw{max-width:none;padding:0 0 48px;background:var(--dev-bg2);border-top:6px dashed var(--dev);margin-top:var(--s6)}
+.docw .docin{max-width:1100px;margin:0 auto;padding:0 var(--s4)}
+.docbanner{background:var(--dev);color:#fff;padding:var(--s3) var(--s4)}
+.docbanner .docin{display:flex;gap:var(--s3);flex-wrap:wrap;align-items:center}
+.docbanner strong{font-size:var(--fs-lg)}
+.docbanner .dt{background:#fff;color:var(--dev)}
+.docw section{border:3px dashed var(--dev);border-radius:var(--r-card);padding:var(--s2) var(--s4) var(--s4);margin-top:var(--s5);background:var(--dev-bg2)}
+.docw section h2{display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap}
+.docw section#cover-top{background:var(--dev-bg);border-width:4px}
+.docw .case{background:#fff}
+.docw .rules li{margin:0 0 4px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<a class="skip" href="#results-section">Skip to results</a>
+<div class="devbar dev" role="region" aria-label="Dev tools. Not part of the prototype.">
+  <span class="dt">Dev tools</span><strong>Not part of the prototype</strong>
+  <div class="grp"><strong>Open page:</strong>
+    <button type="button" data-act="gopage" data-p="home" aria-pressed="true">Home</button>
+    <button type="button" data-act="gopage" data-p="search" aria-pressed="false">Search page</button></div>
+  <div class="grp" role="group" aria-label="Screen size"><strong>Screen size:</strong>
+    <button type="button" data-act="width" data-w="390" aria-pressed="false">Phone (390 px)</button>
+    <button type="button" data-act="width" data-w="768" aria-pressed="false">Tablet (768 px)</button>
+    <button type="button" data-act="width" data-w="0" aria-pressed="true">Desktop (full width)</button></div>
+  <div class="grp"><strong>Simulate:</strong>
+    <label><input type="checkbox" id="slow"> Slow search (6 s)</label>
+    <label><input type="checkbox" id="fail"> Fail the next search</label></div>
+  <div class="grp"><strong>Go to:</strong> <a href="#requirements">Requirements</a> <a href="#cover-top">Use cases</a> <a href="#spec">Design spec</a></div>
+</div>
+<div class="pstrip" role="note"><span class="dt">Prototype starts</span><span>Everything inside the blue frame is the prototype. The header, footer and the Home sections below the search band are today's Connect page, shown for context. Amber numbered circles and amber panels are dev markers, not design.</span></div>
+
+<div id="frame">
+  <div id="shell">
+    <div class="topbanner" id="topbanner">Welcome to the new and improved OMNIA Partners Connect! Explore the platform to see what's new.<button type="button" data-act="hidetop" aria-label="Dismiss welcome message">&times;</button></div>
+    <div class="userbar"><span class="avatar" aria-hidden="true">VD</span> Valentina Diamante</div>
+    <header class="hdr"><div class="wrap">
+      <div class="logo"><span>OMNIA <span class="thin">PARTNERS</span></span><span aria-hidden="true">|</span><span>CONNECT</span><span class="pill-dev">DEV</span></div>
+      <nav class="nav" aria-label="Main"><a href="#" data-act="nav" data-p="home" aria-current="page">Home</a><a href="#" data-act="nav" data-p="search">Search</a><a href="#" data-act="navx">Partner Development</a><a href="#" data-act="navx">Learning</a><a href="#" data-act="navx">Resources</a></nav>
+      <span id="navnote" role="status"></span>
+    </div></header>
+  </div>
+
+  <main id="main">
+  <div id="view-home">
+    <h1 class="sr">OMNIA Connect home</h1>
+    <div class="band"><div class="wrap" id="host-home">
+      <div id="searchcomp">
+        <div id="banner"></div>
+        <div class="tabs" role="tablist" aria-label="Search type">
+          <button type="button" role="tab" id="tab-org" aria-selected="true" aria-controls="panel-org" data-act="tab" data-key="org">Organizations</button>
+          <button type="button" role="tab" id="tab-con" aria-selected="false" aria-controls="panel-con" tabindex="-1" data-act="tab" data-key="con">Contacts<span data-mk="ctab"></span></button>
+        </div>
+        <section id="panel-org" role="tabpanel" aria-labelledby="tab-org">
+          <form class="panel" id="form" role="search" aria-label="Organization search" novalidate>
+    <div class="fields">
+      <div><label for="org">Organization name<span data-mk="orgfield"></span></label><input type="text" id="org" placeholder="Atlantic" autocomplete="off" enterkeyhint="search" aria-describedby="formerr"></div>
+      <div><label for="fid">Force ID<span data-mk="fidfield"></span></label><input type="text" id="fid" placeholder="6056531" inputmode="numeric" autocomplete="off" enterkeyhint="search" aria-describedby="formerr"></div>
+      <div><label for="loc">Location (city, county, state or ZIP)<span data-mk="locfield"></span></label><input type="text" id="loc" placeholder="Lubbock, TX" autocomplete="off" enterkeyhint="search" aria-describedby="formerr"></div>
+      <div class="mid" id="mid-org"></div>
+      <div class="extra" id="extra-org"></div>
+      <div class="actions"><button class="primary" type="submit">Search</button><button type="button" class="linkbtn clr" data-act="clearall">Clear all</button><span data-mk="clear"></span><button type="button" class="linkbtn filt-btn" id="filt-org" aria-expanded="false" aria-controls="extra-org" data-act="filt" data-key="org"><span>More filters<span class="cnt"></span><span data-mk="filt"></span></span><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg></button></div>
+    </div>
+    <ul class="chips" id="chips-org" aria-label="Applied filters"></ul>
+    <div id="formerr" class="formerr" role="alert"></div>
+    <div id="toast" role="status" aria-live="polite"></div>
+  </form>
+        </section>
+        <section id="panel-con" role="tabpanel" aria-labelledby="tab-con" hidden>
+          <p class="cpanel-lead">Search contacts at public-sector organizations. Private-sector organizations have no contacts.<span data-mk="cscope"></span></p>
+          <form class="panel" id="cform" role="search" aria-label="Contact search" novalidate>
+    <div class="fields">
+      <div><label for="cname">Contact name</label><input type="text" id="cname" placeholder="Garcia" autocomplete="off" enterkeyhint="search" aria-describedby="cformerr"></div>
+      <div><label for="corg">Organization name</label><input type="text" id="corg" placeholder="Lubbock" autocomplete="off" enterkeyhint="search" aria-describedby="cformerr"></div>
+      <div><label for="cfid">Force ID</label><input type="text" id="cfid" placeholder="7100001" inputmode="numeric" autocomplete="off" enterkeyhint="search" aria-describedby="cformerr"></div>
+      <div><label for="cloc">Location (city, county, state or ZIP)</label><input type="text" id="cloc" placeholder="Lubbock, TX" autocomplete="off" enterkeyhint="search" aria-describedby="cformerr"></div>
+      <div class="extra" id="extra-con"></div>
+      <div class="actions"><button class="primary" type="submit">Search contacts</button><button type="button" class="linkbtn clr" data-act="cclearall">Clear all</button><button type="button" class="linkbtn filt-btn" id="filt-con" aria-expanded="false" aria-controls="extra-con" data-act="filt" data-key="con"><span>More filters<span class="cnt"></span></span><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg></button></div>
+    </div>
+    <ul class="chips" id="chips-con" aria-label="Applied filters"></ul>
+    <div id="cformerr" class="formerr" role="alert"></div>
+  </form>
+        </section>
+        <span data-mk="comp"></span>
+      </div>
+    </div></div>
+    <div class="pagebody"><div class="wrap">
+      <div id="legend-home"></div>
+      <div class="phzone">
+      <h2 class="sec">Supplier Bulletin</h2>
+      <div class="card bulletin"><div class="ph" aria-hidden="true">Image placeholder</div><div><p><strong>Latest news, product updates, or key initiatives.</strong><br>This is your dedicated section of the dashboard to share information directly with your internal team or cross-functional stakeholders using the platform. Use it to highlight recent wins, spotlight new team members, announce upcoming events, or share any timely messaging you'd like to communicate.</p><p class="mut">Note: This section can be modified by your Connect Administrator. This content is visible only to your organization's users on the platform, not to customers or external parties.</p></div></div>
+      <div style="margin-top:var(--s5)"><div class="savedhdr">Saved Searches (0)</div><div class="savedrow"><a class="lk" href="#" data-act="navx">Club 5K Organizations</a><span>This is a list of the organizations participating in the Club 5K program.</span></div></div>
+      <h2 class="sec">Knowledge Hub</h2>
+      <div class="two-up">
+        <div class="card"><h3>Learning In Progress</h3><hr style="border:0;border-top:1px solid var(--line);margin:var(--s2) 0 var(--s3)"><div class="ph" aria-hidden="true">Jump Back In to Your Learning Journey</div><p class="mut">No courses started yet! Begin your learning journey now by exploring our catalog and enrolling in your first course.</p><a class="lk royal" href="#" data-act="navx">View More</a></div>
+        <div class="card"><h3>Explore All Courses</h3><hr style="border:0;border-top:1px solid var(--line);margin:var(--s2) 0 var(--s3)"><div class="ph" aria-hidden="true">Course Catalog: Your Comprehensive Guide to Selling through OMNIA Partners</div><p class="mut">Welcome to your course catalog, where you can explore a full range of training resources designed to support your strategy.</p><a class="lk royal" href="#" data-act="navx">View More</a></div>
+      </div>
+      <h2 class="sec">Questions? Contact Us</h2>
+      <div class="card" style="display:flex;gap:var(--s4);align-items:center;flex-wrap:wrap"><div class="ph" aria-hidden="true" style="min-height:64px;width:64px;padding:0">&#128100;</div><strong>OMNIA Partners Connect Support</strong><span>Email: <a class="lk royal" href="#" data-act="navx">connect.support@omniapartners.com</a></span></div>
+    </div></div></div>
+  </div>
+
+  <div id="view-search" hidden>
+    <div class="band"><div class="wrap" id="host-search">
+      <h1>Search</h1>
+    </div></div>
+    <div class="pagebody"><div class="wrap">
+      <section id="results-section" tabindex="-1" aria-label="Organization results"><div id="results"></div></section>
+      <section id="cresults-section" tabindex="-1" aria-label="Contact results" hidden><div id="cresults"></div></section>
+      <div id="legend-search"></div>
+    </div></div>
+  </div>
+  </main>
+
+  <footer class="footer"><div class="wrap">
+    <div class="logo"><span>OMNIA <span class="thin">PARTNERS</span></span><span aria-hidden="true">|</span><span>CONNECT</span></div>
+    <div>866-875-3299<br>5001 Aspen Grove Dr,<br>Franklin, TN 37067</div>
+    <div>www.omniapartners.com<br>connect.support@omniapartners.com<br><a href="#" data-act="navx">Privacy Policy</a> | <a href="#" data-act="navx">Terms of Use</a></div>
+    <div>Ver. 0.1.0</div>
+  </div></footer>
+</div>
+
+<div class="pstrip" role="note"><span class="dt">Prototype ends</span><span>Everything below is dev documentation. It is not part of Connect.</span></div>
+<div id="announce" class="sr" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<div class="docw">
+  <div class="docbanner"><div class="docin"><span class="dt">Outside the prototype</span><strong>Dev documentation</strong><span>Requirements, use cases and the design spec. None of this is part of Connect. Try buttons drive the prototype above.</span></div></div>
+  <div class="docin">
+  <section id="requirements" class="dev" aria-labelledby="req-h">
+    <h2 id="req-h">High-level requirements <span class="dt">Outside the prototype</span></h2>
+    <p class="lead">What the search must do. These are requirements, not user stories; each one is checked by the use cases below.</p>
+    <div class="rules" id="reqbody"></div>
+  </section>
+
+  <section class="cover" id="cover-top" aria-labelledby="cover-h">
+    <h2 id="cover-h">Use cases <span class="dt">Outside the prototype</span></h2>
+    <p class="lead"><strong>Test cases for the dev team, not a screen in Connect.</strong> Each Try button sets up the prototype above on the right page and adds amber numbered markers to the screen. The "What to look for" panel explains each marker.</p>
+    <div id="cover"></div>
+    <p class="foot">Search, matching and counts run in the page on made-up data standing in for the real search.</p>
+  </section>
+
+  <section class="spec dev" id="spec" aria-labelledby="spec-h">
+    <h2 id="spec-h">Design spec <span class="dt">Outside the prototype</span></h2>
+    <p class="lead">What the React build should use. Everything is defined once as a token (a CSS variable) and every component reads from it, so the same system scales to the rest of Connect. Where this deviates from the brand guide, it is flagged.</p>
+    <div id="specbody"></div>
+  </section>
+  </div>
+</div>
+
+<script>
+const DEV=true;
+if(!DEV)document.body.classList.add('plain');else document.querySelectorAll('.plain-only').forEach(e=>e.remove());
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const IC={chevR:'M9 6l6 6-6 6',chevD:'M6 9l6 6 6-6',ext:'M14 4h6v6M10 14L20 4M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5',check:'M5 12l5 5L20 7',x:'M6 6l12 12M18 6L6 18',info:'M12 8h.01M11 12h1v5h1M12 3a9 9 0 100 18 9 9 0 000-18z',pin:'M12 21s-6-5.5-6-10a6 6 0 0112 0c0 4.5-6 10-6 10zM12 9a2 2 0 100 4 2 2 0 000-4z'};
+const ic=(k,s=16)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="${IC[k]}"/></svg>`;
+
+const STATES={TX:'Texas',GA:'Georgia',SC:'South Carolina',NC:'North Carolina',AL:'Alabama',FL:'Florida',NE:'Nebraska',CA:'California'};
+const CITY={Lubbock:['TX','79401','Lubbock'],Austin:['TX','78701','Travis'],Houston:['TX','77002','Harris'],Dallas:['TX','75201','Dallas'],Amarillo:['TX','79101','Potter'],Columbus:['GA','31901','Muscogee'],Atlanta:['GA','30303','Fulton'],Savannah:['GA','31401','Chatham'],Macon:['GA','31201','Bibb'],Augusta:['GA','30901','Richmond'],Birmingham:['AL','35203','Jefferson'],Tampa:['FL','33602','Hillsborough'],Orlando:['FL','32801','Orange'],Charleston:['SC','29401','Charleston'],Raleigh:['NC','27601','Wake'],Wilmington:['NC','28401','New Hanover'],Omaha:['NE','68102','Douglas'],'Los Angeles':['CA','90012','Los Angeles'],Sacramento:['CA','95814','Sacramento']};
+const nodes=[],byId={},kids={};
+function add(id,name,parent,city,aliases,zip){const c=CITY[city];const n={id:String(id),name,parent:parent?String(parent):null,city,st:c[0],zip:zip||c[1],county:c[2],aliases:aliases||[],street:(100+(+id%800))+' '+['Main St','Oak Ave','Harbor Dr','Market St','Cedar Rd'][+id%5]};nodes.push(n);byId[n.id]=n;if(n.parent){(kids[n.parent]=kids[n.parent]||[]).push(n.id);}}
+
+add(6056530,'Synovus Bank',null,'Columbus',['Synovus Financial']);
+[[6056531,'Harbor branch','Lubbock'],[6056532,'Main Street branch','Lubbock'],[6056533,'Westside branch','Lubbock','79414'],[6056534,'Eastside branch','Austin'],[6056535,'Midtown branch','Atlanta'],[6056536,'Peachtree branch','Atlanta'],[6056537,'Riverfront branch','Savannah'],[6056538,'Downtown branch','Macon'],[6056539,'Garden City branch','Augusta'],[6056545,'Birmingham branch','Birmingham'],[6056546,'Tampa branch','Tampa']].forEach(r=>add(r[0],'Synovus Bank, '+r[1],6056530,r[2],[],r[3]));
+add(6056540,'Synovus Operations center',6056530,'Columbus');
+[1,2,3,4].forEach(i=>add(6056540+i,'Synovus Operations, team '+i,6056540,'Columbus'));
+add(6056551,'Synovus Bank, Harbor drive-through',6056531,'Lubbock');
+add(6056552,'Synovus Bank, Harbor ATM center',6056531,'Lubbock');
+
+add(7200000,'Atlantic Health System',null,'Charleston');
+const D=['Downtown','North','Harbor','West','East','Riverside','Lakeside','Midtown','Parkway','Summit'];
+const CC=['Charleston','Savannah','Raleigh','Austin','Houston','Atlanta','Wilmington','Tampa'];
+for(let i=1;i<=148;i++){add(7200000+i,'Atlantic Health, '+D[i%10]+' clinic '+i,7200000,(i>=12&&i<=14)?'Lubbock':CC[i%CC.length]);}
+
+add(7300000,'Meridian Health Network',null,'Dallas');
+add(7300100,'Meridian Regional Group',7300000,'Dallas');
+add(7300101,'Atlantic Campus Hospital',7300100,'Houston');
+add(7300102,'Meridian Campus Hospital',7300100,'Dallas');
+
+add(7400000,'Coastal Medical Partners',null,'Wilmington',['Atlantic Physicians Group']);
+[1,2,3].forEach(i=>add(7400000+i,'Coastal Medical, clinic '+i,7400000,'Wilmington'));
+
+add(7500000,'Greenfield Holdings',null,'Omaha');
+add(7500001,'Atlantic Urgent Care, Greenfield',7500000,'Lubbock');
+add(7500002,'Greenfield Care, Omaha',7500000,'Omaha');
+
+add(7600000,'Texas Tech Health Sciences Center',null,'Lubbock',[],'79430');
+add(7600001,'Texas Tech Physicians, Lubbock',7600000,'Lubbock',[],'79430');
+
+add(7700000,'Plains Credit Union',null,'Lubbock');
+add(7700001,'Plains Credit Union, Lubbock branch',7700000,'Lubbock');
+add(7700002,'Plains Credit Union, Amarillo branch',7700000,'Amarillo');
+
+add(7800000,'California Orange Juice',null,'Tampa');
+add(7800001,'California Orange Juice, Orlando plant',7800000,'Orlando');
+
+add(7900000,'Golden State Credit Union',null,'Los Angeles');
+add(7900001,'Golden State Credit Union, Sacramento branch',7900000,'Sacramento');
+
+add(7100000,'City of Lubbock',null,'Lubbock');
+add(7100010,'City of Lubbock, Parks and Recreation',7100000,'Lubbock');
+add(7100001,'Lubbock Independent School District',null,'Lubbock');
+add(7100002,'Lubbock County',null,'Lubbock');
+add(7100003,'Georgia Department of Corrections',null,'Atlanta');
+
+const kidsOf=id=>(kids[id]||[]).map(i=>byId[i]);
+const cnt=k=>k+' child '+(k===1?'organization':'organizations');
+function anc(id){const a=[];let p=byId[id].parent;while(p){a.unshift(p);p=byId[p].parent;}return a;}
+const rootOf=id=>{const a=anc(id);return a.length?a[0]:id;};
+const byName=(a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true});
+const SUB={'City/Township':['City','Township','Village'],'Corrections':['Jail','Prison'],'County':['County government','County agency'],'Healthcare Services Public':['Hospital','Clinic'],'Higher Education':['Community college','University'],'K-12 Education':['District','School'],'Nonprofit':['Association','Church','Credit union','Other'],'Special District/Authority':['Water district','Transit authority'],'State':['State agency'],'Tribal Nation':['Tribal government'],'Unclassified Public':['Other']};
+const SIZES=['Unknown','Small','Medium','Large'].map(x=>[x,x]);
+const ROLES=['Administration','Classroom Instruction','Elected Officials','Faculty & Instruction','Leadership','Public Engagement','Research','Social Services'].map(x=>[x,x]);
+const AREAS=['Administrative','Educational','Environmental','Facilities Management','Professional Services'].map(x=>[x,x]);
+const META={7100000:{s:'Public',g:'City/Township',e:7.6},7100001:{s:'Public',g:'K-12 Education',e:4.2},7100002:{s:'Public',g:'County',e:8.8},7100003:{s:'Public',g:'Corrections',e:5.5},7600000:{s:'Public',g:'Higher Education',e:8.4},7200000:{s:'Public',g:'Healthcare Services Public',e:6.2},7300000:{s:'Public',g:'Healthcare Services Public',e:9.1}};
+nodes.forEach(n=>{const rt=rootOf(n.id),r=META[rt],id=+n.id;n.sector=r?r.s:'Private';n.seg=r?r.g:null;const base=r?r.e:3+((+rt)%7);n.score=n.parent?Math.min(10,Math.max(0,Math.round((base+((id%5)-2)*0.4)*10)/10)):base;
+  const sl=n.seg?SUB[n.seg]:null;n.sub=sl?sl[id%sl.length]:null;n.size=SIZES[id%4][0];n.cu=id%6;n.cap=id%3===0;n.pot=id%5===0?null:(id%7)*25000;n.sales=(id%8)*18000;n.trend=((id%11)-5)*3;n.status=id%3===0?'Current':'Prospect';n.opus=id%4===0;n.pin=id%10===0;});
+const engKey=x=>x>=8?'hi':x>=5?'mid':'lo';
+const ENGL={hi:'Highly Engaged',mid:'Somewhat Engaged',lo:'Less Engaged'};
+const CONTACTS=[['Maria Garcia','Finance Director','Finance',7100000],['James Whitfield','Purchasing Manager','Purchasing',7100000],['Julia Torres','Budget Analyst','Finance',7100000],['Dana Okafor','Superintendent','Administration',7100001],['Luis Hernandez','Technology Director','Information Technology',7100001],['Marcus Reed','Facilities Manager','Facilities',7100001],['Carlos Garcia','Maintenance Lead','Facilities',7100001],['Priya Raman','County Judge','Administration',7100002],['Tom Becker','Purchasing Agent','Purchasing',7100002],['Robert Hall','Program Liaison','Corrections Services',7100003],['Anita Shah','Purchasing Director','Purchasing',7100003],['Elena Moreau','Procurement Officer','Procurement',7600000],['Kevin Park','Dean of Operations','Operations',7600000],['Rachel Nguyen','Chief Nursing Officer','Clinical Operations',7200000],['Samuel Ortiz','VP Supply Chain','Supply Chain',7200000],['Hannah Lee','Contracts Manager','Contracts',7200012],['Carla Mendes','Director of Procurement','Procurement',7300000]].map((r,i)=>({id:'c'+i,name:r[0],title:r[1],dept:r[2],org:String(r[3]),role:ROLES[i%8][0],email:r[0].toLowerCase().replace(/[^a-z]+/g,'.')+'@example.org',phone:'(806) 555-01'+String(10+i),last:i%3===1?null:'2026-0'+(1+i%9)+'-'+(10+i%18),infl:i%2===0,dm:i%3===0,areas:[AREAS[i%5][0]].concat(i%4===0?[AREAS[(i+2)%5][0]]:[]),opus:i%4===0,pin:i%6===0}));
+nodes.forEach(n=>{n.contacts=n.sector==='Public'?CONTACTS.filter(c=>c.org===n.id).length:null;});
+const meta=n=>esc(n.sector+(n.seg?' · '+n.seg:'')+' · '+ENGL[engKey(n.score)]+' ('+n.score.toFixed(1)+') · '+(n.contacts==null?'Contacts N/A':n.contacts+' contact'+(n.contacts===1?'':'s')));
+function placeKeys(n){return [[n.city.toLowerCase(),n.city+', '+n.st],[n.city.toLowerCase()+', '+n.st.toLowerCase(),n.city+', '+n.st],[n.city.toLowerCase()+' '+n.st.toLowerCase(),n.city+', '+n.st],[n.county.toLowerCase()+' county',n.county+' County'],[n.st.toLowerCase(),STATES[n.st]],[STATES[n.st].toLowerCase(),STATES[n.st]],[n.zip,'ZIP '+n.zip]];}
+function locMatch(n,q){for(const k of placeKeys(n)){if(k[0]===q)return 'Address in '+k[1];}return null;}
+function fidMatch(n,q){if(n.id===q)return 'Force ID '+n.id+' (exact)';if(q.length>=4&&n.id.startsWith(q))return 'Force ID '+n.id+' (starts with '+q+')';return null;}
+function orgMatch(n,o){
+  const nm=n.name.toLowerCase();
+  if(o.tokens.every(t=>nm.includes(t)))return {t:'name',reason:'Name contains "'+o.q+'"'};
+  const al=n.aliases.find(a=>o.tokens.every(t=>a.toLowerCase().includes(t)));
+  if(al)return {t:'alias',reason:'Also known as "'+al+'"'};
+  const sw=similarWords(n,o);if(sw)return {t:'similar',reason:'Similar to "'+sw+'"'};
+  return null;}
+const num=x=>+String(x).replace(/[$,\s]/g,'');
+function inR(x,r){if(r.a===''&&r.b==='')return true;if(x==null)return false;if(r.a!==''&&x<num(r.a))return false;if(r.b!==''&&x>num(r.b))return false;return true;}
+function passF(n,q){const f=q.f;
+  if(f.sector&&n.sector!==f.sector)return false;
+  if(f.seg.length&&!f.seg.includes(n.seg))return false;
+  if(f.eng.length&&!f.eng.includes(engKey(n.score)))return false;
+  if(f.sub.length&&!f.sub.includes(n.sub))return false;
+  if(f.size.length&&!f.size.includes(n.size))return false;
+  if(!inR(n.cu,f.cu)||!inR(n.pot,f.pot)||!inR(n.sales,f.sales))return false;
+  if(f.cap&&(f.cap==='yes')!==n.cap)return false;
+  if(f.cont!==''&&!(n.contacts!=null&&n.contacts>=num(f.cont)))return false;
+  if(f.trend&&!(f.trend==='up'?n.trend>0:n.trend<0))return false;
+  if(f.cp.length&&!f.cp.includes(n.status))return false;
+  if(f.opus&&(f.opus==='yes')!==n.opus)return false;
+  if(f.pin&&!n.pin)return false;
+  return true;}
+function matchNode(n,o,fid,l,q){const rs=[];let t=null;
+  if(o){const r=orgMatch(n,o);if(!r)return null;rs.push(r.reason);t=r.t;}
+  if(fid){const r=fidMatch(n,fid);if(!r)return null;rs.push(r);t='id';}
+  if(l){const r=locMatch(n,l);if(!r)return null;rs.push(r);if(!t)t='location';}
+  if(!passF(n,q))return null;
+  if(!t){t='filter';rs.push('Matches your filters');}
+  return {t,reason:rs.join(' · ')};}
+function compute(q){
+  const o=q.org.trim()?{type:'name',q:q.org.trim(),tokens:q.org.trim().toLowerCase().split(/\s+/)}:null,fid=q.fid.trim()||null,l=q.loc.trim()?q.loc.trim().toLowerCase():null;
+  const m=new Map();nodes.forEach(n=>{const r=matchNode(n,o,fid,l,q);if(r)m.set(n.id,r);});
+  const rank={id:0,name:1,alias:2,similar:3,location:4,filter:5};
+  const fm=new Map();
+  m.forEach((r,id)=>{const root=rootOf(id);if(!fm.has(root))fm.set(root,{root,matches:new Map(),anc:new Set(),strong:new Set(),dcount:{}});const f=fm.get(root);f.matches.set(id,r);anc(id).forEach(a=>{f.anc.add(a);f.dcount[a]=(f.dcount[a]||0)+1;if(r.t!=='similar')f.strong.add(a);});});
+  const fams=[...fm.values()];
+  fams.forEach(f=>{f.best=Math.min(...[...f.matches.values()].map(r=>rank[r.t]));});
+  fams.sort((a,b)=>a.best-b.best||b.matches.size-a.matches.size||byId[a.root].name.localeCompare(byId[b.root].name));
+  const types={};m.forEach(r=>{types[r.t]=(types[r.t]||0)+1;});
+  return {o,l,matches:m,fams,types};}
+function computeC(q){
+  const tk=x=>x.trim().toLowerCase().split(/\s+/).filter(Boolean),nm=tk(q.cname),on=tk(q.org),fid=q.fid.trim(),l=q.loc.trim()?q.loc.trim().toLowerCase():null,f=q.f,out=[],lc=x=>x.toLowerCase();
+  CONTACTS.forEach(c=>{const o=byId[c.org],rs=[];
+    if(nm.length){if(!nm.every(t=>c.name.toLowerCase().includes(t)))return;rs.push('Name contains "'+q.cname.trim()+'"');}
+    if(on.length){const hay=[o.name].concat(o.aliases).join(' ').toLowerCase();if(!on.every(t=>hay.includes(t)))return;rs.push('Works at an organization named "'+q.org.trim()+'"');}
+    if(fid){const r=fidMatch(o,fid);if(!r)return;rs.push('Organization: '+r);}
+    if(l){const r=locMatch(o,l);if(!r)return;rs.push('Organization: '+r.replace('Address in','address in'));}
+    if(f.cseg.length&&!f.cseg.includes(o.seg))return;
+    if(f.ctitle&&!lc(c.title).includes(lc(f.ctitle)))return;
+    if(f.cdept&&!lc(c.dept).includes(lc(f.cdept)))return;
+    if(f.cmail&&(f.cmail==='yes')!==!!c.email)return;
+    if(f.cphone&&(f.cphone==='yes')!==!!c.phone)return;
+    if(f.clast.a!==''||f.clast.b!==''){if(!c.last)return;if(f.clast.a&&c.last<f.clast.a)return;if(f.clast.b&&c.last>f.clast.b)return;}
+    if(f.crole.length&&!f.crole.includes(c.role))return;
+    if(f.cinfl&&(f.cinfl==='yes')!==c.infl)return;
+    if(f.cdm&&(f.cdm==='yes')!==c.dm)return;
+    if(f.careas.length&&!c.areas.some(a=>f.careas.includes(a)))return;
+    if(f.copus&&(f.copus==='yes')!==c.opus)return;
+    if(f.cpin&&!c.pin)return;
+    if(!rs.length)rs.push('Matches your filters');
+    out.push({c,o,reason:rs.join(' · ')});});
+  return out.sort((a,b)=>a.c.name.localeCompare(b.c.name));}
+function cEmptyMsg(q){
+  const f=q.fid.trim(),n=f&&byId[f];
+  if(n&&n.sector==='Private')return n.name+' is a private-sector organization. Contacts are only available for public-sector organizations.';
+  if(q.org.trim()){const ts=q.org.trim().toLowerCase().split(/\s+/),pv=nodes.find(x=>x.sector==='Private'&&ts.every(t=>x.name.toLowerCase().includes(t)));if(pv)return pv.name+' is a private-sector organization. Contacts are only available for public-sector organizations.';}
+  return 'Check the spelling, or try fewer words. Contacts are only available for public-sector organizations.';}
+
+function lev(a,b){const d=[];for(let i=0;i<=a.length;i++){d[i]=[i];}for(let j=0;j<=b.length;j++){d[0][j]=j;}for(let i=1;i<=a.length;i++){for(let j=1;j<=b.length;j++){d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));}}return d[a.length][b.length];}
+function similarWords(n,o){
+  const words=[n.name].concat(n.aliases).join(' ').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);const hit=[];
+  for(const t of o.tokens){
+    const thr=t.length>=7?2:1;let found=null;
+    for(const w of words){if(w.includes(t)||(t.length>=4&&(lev(t,w)<=thr||lev(t,w.slice(0,t.length))<=thr))){found=w;break;}}
+    if(!found)return null;hit.push(found);}
+  return hit.join(' ');}
+
+const CASES=[
+ {id:1,title:`Hero card: a Force ID that matches a child`,tries:[[`6056531`,{fid:`6056531`}]],
+  rules:[`Force ID is its own field. When a Force ID belongs to a child organization, show that child as the main result. Never show only its parent.`,`The child sits inside its parent's card so you can see where it belongs. The parent stays quiet: just its name, ID and how many children it has.`,`The child card says "Matches your search" and why: "Force ID 6056531 (exact)".`,`The child's own children (2 here) stay closed behind "2 child organizations".`,`The parent's other children stay hidden behind "Show the other 11 child organizations".`],
+  a11y:`Tab goes through each name, address and expand button in reading order. Enter or Space opens an expand button, and focus stays on it. When results load, a screen reader announces "1 match in 1 family".`,
+  open:`The search needs to return each match together with its parent and child count. Today it returns only the parent.`,
+  marks:[[`fidfield`,`Force ID has its own field.`],[`counts`,`"1 match in 1 family". Only the matching organization is counted, not its parent.`],[`ctx`,`The parent is opened just far enough to show the match.`],[`badge`,`The match is highlighted and labelled.`],[`reason`,`The reason it matched.`],[`addr`,`Click the address to open Google Maps in a new tab.`],[`kids`,`The match's own children stay closed.`],[`others`,`The rest of the parent's children are one click away.`]]},
+ {id:2,title:`Name search across several families`,tries:[[`Atlantic`,{org:`Atlantic`}]],
+  rules:[`Show every family that has a match, with a count like "152 matches in 4 families".`,`A parent that matches by name shows as the highlighted card and stays closed. It says how many of its children also match, for example "148 child organizations · 148 matches".`,`A parent that does not match, but has a matching child, opens to show that child (cases 6 and 10).`,`Each result says why it matched: name, alias ("also known as") or Force ID.`,`Families with the strongest matches come first. Ties go to the family with more matches.`],
+  a11y:`The count is a heading, so a screen reader user can jump to it, and it is announced after each search. Each family is one item in a list, so "list, 4 items" is read first.`,
+  open:`The search needs to return match type and match count for each family.`,
+  marks:[[`counts`,`Total matches and families. Split by kind when there is more than one kind.`],[`narrow`,`A note appears when a search is large (100+ matches or 5+ families).`],[`badge`,`A matching parent is highlighted.`],[`kids`,`It stays closed, and says how many children match.`],[`reason`,`Why it matched.`]]},
+ {id:3,title:`Hero card: a Force ID that matches a parent`,tries:[[`6056530`,{fid:`6056530`}]],
+  rules:[`When the Force ID belongs to a top-level organization, show it as the highlighted card.`,`Its children stay closed behind "12 child organizations". None of them matched, so no match count is shown.`,`There is no parent label above it, because there is nothing above it.`],
+  a11y:`The expand button says "12 child organizations in Synovus Bank" and "collapsed", so the user knows what it will open before pressing it.`,
+  open:null,
+  marks:[[`badge`,`The parent is the match.`],[`reason`,`Force ID, exact.`],[`kids`,`Children closed, with a count and no match count.`]]},
+ {id:4,title:`Three-level family, nested cards`,tries:[[`Atlantic (see Meridian Health Network)`,{org:`Atlantic`}]],
+  rules:[`When only a grandchild matches, show the grandparent, then the parent nested inside it, then the matching grandchild inside that.`,`Only the branch that leads to the match is open. Everything else stays closed.`,`Each level shows its name, ID and child count, so you can see how deep the family goes.`],
+  a11y:`Each level is a list inside a list, so a screen reader says "list, 1 item" as it goes deeper. Each opened level has an expand button marked "expanded".`,
+  open:`Very deep families (four or more levels) are not designed yet.`,
+  marks:[[`ctx`,`Top level opened because a descendant matches.`],[`nest`,`The middle level, nested inside.`],[`badge`,`The match at the bottom.`]]},
+ {id:5,title:`Large family (148 child organizations)`,tries:[[`Atlantic (see Atlantic Health System)`,{org:`Atlantic`}]],
+  rules:[`A parent that matches stays closed even when all of its children match.`,`It says how many children there are and how many matched.`,`Opening it shows the best matches first, five at a time, with "Show 10 more".`,`When there are more than 10 children, an "Open full family" link opens the complete list in a new tab. There is no filter box in the first version.`],
+  a11y:`After "Show 10 more", focus stays on the button so the user can keep pressing it. New rows are added above it, in reading order.`,
+  open:`Paging one level at a time needs the API to return children in pages.`,
+  marks:[[`kids`,`Click this to open the list.`],[`openfam`,`The link to the full list in a new tab (appears once the card is open).`]]},
+ {id:6,title:`Organization name finds names only`,tries:[[`California`,{org:`California`}]],
+  rules:[`Organization name only searches names and aliases. It never searches Force IDs or places.`,`Typing "California" returns organizations with California in the name, wherever they are. California Orange Juice is located in Florida and still appears.`,`It never returns organizations that are only located in California. There is no "did you mean a place?" prompt.`],
+  a11y:`The field has a visible label that is also its accessible name. The placeholder is an example only, never the label.`,
+  open:null,
+  marks:[[`orgfield`,`This field searches names.`],[`reason`,`The match is on the name.`],[`addr`,`Florida address, even though the name says California.`]]},
+ {id:7,title:`Location finds where organizations are`,tries:[[`California (location)`,{loc:`California`}]],
+  rules:[`The Location field only searches places: city, county, state or ZIP.`,`Typing "California" returns organizations located in California, like Golden State Credit Union. It never returns organizations that only have California in their name.`,`The result says "Address in California".`],
+  a11y:`Same as case 6: a visible label, and the reason for each match is written as text.`,
+  open:`Every address needs a stored place ID so matching is precise without a search engine. Splitting city, state and ZIP into separate fields is not planned; one Location field covers all three.`,
+  marks:[[`locfield`,`This field searches places.`],[`reason`,`The match is on the address.`],[`counts`,`Only organizations located there.`]]},
+ {id:8,title:`Location search with child matches`,tries:[[`Lubbock, TX`,{loc:`Lubbock, TX`}]],
+  rules:[`When a parent does not match but several of its children do, open the parent and show only those children.`,`When the parent itself matches (Texas Tech Health Sciences Center), keep it closed and show how many of its children match.`,`Parents like Synovus Bank and Atlantic Health System are shown as context. The count at the top counts only the matching organizations.`,`When a search returns 100+ matches or 5+ families, a note suggests adding a name or a filter.`],
+  a11y:`A parent that opens by itself is announced as "expanded" when the user reaches its button, so nothing opens silently.`,
+  open:null,
+  marks:[[`counts`,`Matches only, not the parents shown for context.`],[`ctx`,`Parent opened because only its children match.`],[`others`,`The parent's other children stay hidden.`],[`kids`,`A matching parent stays closed, with its match count.`]]},
+ {id:9,title:`Match reasons and counts`,tries:[[`Atlantic`,{org:`Atlantic`}]],
+  rules:[`Every result says why it matched: name, alias, Force ID, location, filters or similar.`,`When a search has more than one kind of match, the header splits the count, for example "151 name · 1 alias".`,`Each match is counted once, in one kind only.`],
+  a11y:`Match kinds are never shown by color alone. Every label is text, and "Similar" also has a different fill.`,
+  open:null,
+  marks:[[`counts`,`The count split by kind.`],[`reason`,`Each card states its reason.`]]},
+ {id:10,title:`Loading, empty and error states`,tries:[[`Zenith Clinic (no results)`,{org:`Zenith Clinic`}]],
+  rules:[`While a search runs, show a loading state with a Cancel button. The results area is never blank.`,`When nothing matches, say so and suggest trying fewer words.`,`When the search fails, show an error with a Retry button and keep the user's search terms. Tick "Fail the next search" below, then search.`,`When the user cancels, say so and offer "Search again". Tick "Slow search" below to have time to press Cancel.`,`The Contacts tab uses the same four states.`],
+  a11y:`Loading, empty and error are announced to screen readers without moving focus. The error is announced at once. If the focused button disappears, focus moves to the results heading.`,
+  open:`Searches can take up to 15 seconds today. The target for the new search is not agreed yet.`,
+  marks:[[`loading`,`Loading state with Cancel.`],[`empty`,`Empty state.`],[`error`,`Error state with Retry.`]]},
+ {id:11,title:`Cards, table and in-card hierarchy`,tries:[[`Atlantic`,{org:`Atlantic`}]],
+  rules:[`Users can switch between Cards and Table. Their choice is remembered for next time.`,`The table lists each matching organization on one row with its parent, location, and its sector, segment and engagement score. A chevron on a row shows that row's children.`,`There is no side panel. The hierarchy is always inside the card.`],
+  a11y:`The Cards and Table buttons say which one is selected. The table is a real table with column headers, and it scrolls sideways on small screens without breaking the page.`,
+  open:`Remembering the choice per user needs a stored preference.`,
+  marks:[[`view`,`The Cards and Table switch.`],[`table`,`The table view.`]]},
+ {id:12,title:`Transition banner`,tries:[[`Show at top`,{}]],
+  rules:[`A banner explains that Organization name, Force ID and Location are now separate fields. It stays until the user dismisses it, or until adoption passes a threshold set after launch.`],
+  a11y:`The banner is a labelled region, and the close button is named "Dismiss search update". It never takes focus on its own.`,
+  open:`The adoption threshold waits on a baseline measurement taken after launch.`,
+  marks:[[`banner`,`The banner.`]]},
+ {id:13,title:`Partial and similar matches`,tries:[[`Atlan`,{org:`Atlan`}],[`Atlnatic`,{org:`Atlnatic`}],[`Force ID 60565`,{fid:`60565`}]],
+  rules:[`Partial: typing part of a name finds it ("Atlan"). In the Force ID field, IDs match from the first digits, from four digits on ("60565").`,`Similar: small typos still find the right name ("Atlnatic"), marked "Similar". Exact matches rank above them. Typo matching applies to names only.`,`When only similar matches exist inside a family, its parent stays closed and says "1 similar match inside". A similar match never opens a parent by itself.`,`A mistyped Force ID never returns a different organization.`],
+  a11y:`"Similar" is written out in the reason, for example "Similar to atlantic", so a screen reader user hears why a result appeared.`,
+  open:`Similar-name matching depends on what the database can do. This is the largest engineering unknown.`,
+  marks:[[`counts`,`Counts split by kind, with "similar".`],[`reason`,`"Similar to ..." in the reason.`],[`hint`,`A closed parent says there are similar matches inside.`]]},
+ {id:14,title:`Filters: sector, market segment, engagement score`,tries:[[`Public, Higher Education, highly engaged`,{sector:`Public`,seg:[`Higher Education`],eng:[`hi`]}],[`Public, County or City`,{sector:`Public`,seg:[`County`,`City/Township`]}]],
+  rules:[`Filters work alone or together with a name, Force ID or location. A result must match every field that has a value (AND).`,`Sector is a single choice: All sectors, Public or Private. Market segment and Engagement score allow several choices. Any chosen value matches (OR), so "County" and "City/Township" returns both.`,`Engagement score ranges are Highly Engaged (8 to 10), Somewhat Engaged (5 to 7.9) and Less Engaged (below 5).`,`Market segment has a search box and "Select all". The button reads "Not selected", the one chosen value, or "N selected".`,`Each result card shows its sector, market segment and engagement score as text, for example "Public · Higher Education · Highly Engaged (8.4)".`,`A filter applies to each organization on its own. Matching children appear inside their parent as in case 8.`],
+  a11y:`Each dropdown is a button that says expanded or collapsed and holds a group of checkboxes. Escape closes it and returns focus to the button. Each choice is announced as checked or not checked. The "?" next to Engagement score is a button that shows or hides its explanation.`,
+  open:`The Private-sector market segment list is not defined (the list shown is the public one). Whether Nonprofit becomes a Sector or stays a Market segment is undecided. The "?" explanation needs copy. The Search Preferences page already stores defaults for these fields; should the form start with them?`,
+  marks:[[`seg`,`Market segment: choose one or more. Search or Select all.`],[`eng`,`Engagement score: three ranges, with a "?" explanation.`],[`profile`,`Sector, segment and score shown as text on the card.`]]},
+ {id:15,title:`Force ID typed into the name field`,tries:[[`6056531 in Organization name`,{org:`6056531`}]],
+  rules:[`The Organization name field does not search Force IDs. When four or more digits are typed there, a note above the results offers "Search Force ID 6056531 instead".`,`One click moves the number into the Force ID field and runs the search. Nothing is changed silently.`,`The Force ID field accepts numbers only. Letters show "Force ID can only contain numbers." under the form and focus goes back to the field.`,`On phones the Force ID field opens the number keypad.`],
+  a11y:`The note is announced with the results. The button inside it is a normal button, reached in reading order.`,
+  open:null,
+  marks:[[`idhint`,`The note that offers to move the number to Force ID.`],[`fidfield`,`The Force ID field.`]]},
+ {id:16,title:`Phone layout and hidden filters`,tries:[[`Phone width with filters open`,{w:390,org:`Atlantic`,sector:`Public`,openF:true}]],
+  rules:[`Below 600px wide (phones) only Organization name, Force ID and Location show. Sector, Market segment and Engagement score sit behind a "Filters" button that says how many are applied, for example "Filters (2 applied)".`,`The Filters button says whether it is expanded or collapsed. Choices stay when the panel is closed.`,`Fields stack in one column and Search is a full-width button.`,`Results use the same cards. Long names wrap. Only the table view scrolls sideways, inside its own box.`,`Every tap target is at least 32px tall (inputs and Search 44px). Inputs use 16px text so phones do not zoom in on focus.`],
+  a11y:`Pinch zoom is never blocked. Screen readers read the fields in the same order as on desktop. Test with VoiceOver on iPhone and TalkBack on Android (a manual step, see the Design spec).`,
+  open:`This page only simulates widths. Real phones and tablets must be tested by hand. The list of supported devices and browsers is not agreed.`,
+  marks:[[`orgfield`,`Organization name, always visible.`],[`fidfield`,`Force ID, always visible.`],[`locfield`,`Location, always visible.`],[`filt`,`The More filters bar, phones only: full width, above the extra fields.`]]},
+ {id:17,title:`Tablet layout`,tries:[[`Tablet width`,{w:768,org:`Atlantic`}]],
+  rules:[`From 600px to 899px wide (tablets) every field shows in two columns. There is no Filters button.`,`At 900px and wider (desktop) every field shows in three columns.`,`The layout follows the width of the page area, not the device, so a narrow browser window behaves like a tablet.`,`Dropdown lists scroll inside their own box. Touch targets are never smaller than 32px.`,`Portrait and landscape both work. At 200% zoom a desktop window behaves like a tablet or phone, so nothing is cut off.`],
+  a11y:`Same labels and the same order at every width.`,
+  open:`Real iPad and Android tablet testing is manual, in portrait and landscape.`,
+  marks:[[`seg`,`All filters are visible. No Filters button.`]]},
+ {id:18,title:`Contacts: search across the whole pool`,tries:[[`Name: Garcia`,{tab:`con`,cname:`Garcia`}],[`Role: Decision maker`,{tab:`con`,role:`Decision maker`}]],
+  rules:[`Contacts is its own search, on its own tab. It only covers contacts at public-sector organizations. Private-sector organizations have no contacts.`,`Fields: Contact name, Organization name, Force ID, Location, Department, Role and Market segment. Leave the organization fields empty to search every contact.`,`Each result is a person: name, title, department and role, plus the organization they work for.`,`The organization name is a link that opens its details page in a new tab. When it is a child organization, the result also names the top-level parent.`,`The count says contacts and organizations: "2 contacts at 1 organization".`,`Contact names match partial text ("Garc").`],
+  a11y:`The tabs follow the standard pattern: arrow keys move between Organizations and Contacts, Home and End jump to the first and last, and the panel changes with the tab.`,
+  open:`Whether contact names get typo-tolerant matching. Whether Department and Role are free text or pick lists. Whether contacts need a table view.`,
+  marks:[[`ctab`,`The Contacts tab.`],[`cscope`,`Public sector only.`],[`ccount`,`Contacts and organizations counted.`],[`cname`,`The person.`],[`corg`,`The organization, opens in a new tab.`],[`creason`,`Why the contact matched.`]]},
+ {id:19,title:`Contacts in a place or at an organization`,tries:[[`Contacts in Lubbock, TX`,{tab:`con`,loc:`Lubbock, TX`}],[`Contacts at Force ID 7100001`,{tab:`con`,fid:`7100001`}],[`Contacts at "Atlantic Health"`,{tab:`con`,org:`Atlantic Health`}]],
+  rules:[`Location, Organization name and Force ID match the organization the contact works for, not the person.`,`A Force ID returns contacts at that exact organization only. Contacts at its child organizations are not included in the first version.`,`Fields combine with AND, so Location plus Department finds, for example, purchasing contacts in Lubbock.`,`A contact at a child organization (a Lubbock clinic under Atlantic Health System) shows the child under "Works at" and names the parent.`],
+  a11y:`Each organization link says "opens in a new tab". The reason text is real text, not color.`,
+  open:`Should a parent's Force ID also return contacts at its child organizations? Leaving them out is simpler, but users may expect them.`,
+  marks:[[`corg`,`The organization, linked to its details page.`],[`creason`,`The organization matched, not the person.`],[`cparent`,`A child organization names its parent.`]]},
+ {id:20,title:`Contacts for a private-sector organization`,tries:[[`Force ID 6056530 (Synovus Bank)`,{tab:`con`,fid:`6056530`}]],
+  rules:[`When the Force ID or name belongs to a private-sector organization, say so plainly: "Synovus Bank is a private-sector organization. Contacts are only available for public-sector organizations."`,`The same note appears when no contacts are found for any other search.`,`The results area is never blank.`],
+  a11y:`The explanation is announced like any empty state, without moving focus.`,
+  open:null,
+  marks:[[`cempty`,`The plain explanation.`]]}
+];
+const SEGS=['City/Township','Corrections','County','Healthcare Services Public','Higher Education','K-12 Education','Nonprofit','Special District/Authority','State','Tribal Nation','Unclassified Public'].map(x=>[x,x]);
+const ENGS=[['hi','Highly Engaged (8 - 10)'],['mid','Somewhat Engaged (5 - 7.9)'],['lo','Less Engaged (< 5)']];
+const YN=[['','Any'],['yes','Yes'],['no','No']];
+const OF=[
+ {k:'sector',label:'Sector',t:'sel',opts:[['','All sectors'],['Public','Public'],['Private','Private']],g:'mid'},
+ {k:'seg',label:'Market segment',t:'ms',opts:SEGS,g:'mid'},
+ {k:'eng',label:'Engagement score',t:'ms',opts:ENGS,g:'mid',help:1},
+ {k:'sub',label:'Market segment sub-type',t:'ms',opts:[],g:'x'},
+ {k:'size',label:'Size band',t:'ms',opts:SIZES,g:'x'},
+ {k:'cu',label:'Contracts used LTM',t:'rng',g:'x'},
+ {k:'cap',label:'Significant capital spent in the last 3 years',t:'sel',opts:YN,g:'x'},
+ {k:'cont',label:'Contacts (minimum)',t:'min',g:'x'},
+ {k:'pot',label:'OMNIA category sales potential',t:'rng',g:'x',money:1},
+ {k:'sales',label:'LTM supplier sales',t:'rng',g:'x',money:1},
+ {k:'trend',label:'LTM sales trend',t:'sel',opts:[['','Any'],['up','Up'],['down','Down']],g:'x'},
+ {k:'cp',label:'Current or prospect',t:'ms',opts:[['Current','Current'],['Prospect','Prospect']],g:'x'},
+ {k:'opus',label:'OPUS access',t:'sel',opts:YN,g:'x'},
+ {k:'pin',label:'Pinned',t:'chk',text:'Pinned organizations only',g:'x'}];
+const CFL=[
+ {k:'cseg',label:'Market segment',t:'ms',opts:SEGS},
+ {k:'ctitle',label:'Title',t:'txt'},
+ {k:'cdept',label:'Department',t:'txt'},
+ {k:'cmail',label:'Has email',t:'sel',opts:YN},
+ {k:'cphone',label:'Has phone',t:'sel',opts:YN},
+ {k:'clast',label:'Last activity',t:'dat'},
+ {k:'crole',label:'Role',t:'ms',opts:ROLES},
+ {k:'cinfl',label:'Purchasing influencer',t:'sel',opts:YN},
+ {k:'cdm',label:'Purchasing decision maker',t:'sel',opts:YN},
+ {k:'careas',label:'Areas of interest',t:'ms',opts:AREAS},
+ {k:'copus',label:'OPUS access',t:'sel',opts:YN},
+ {k:'cpin',label:'Pinned',t:'chk',text:'Pinned contacts only'}];
+const MS={};OF.concat(CFL).filter(f=>f.t==='ms').forEach(f=>{MS[f.k]={label:f.label,opts:f.opts,set:new Set(),mk:''};});
+
+CASES.unshift(
+ {id:0,title:`Start a search on the Home page`,tries:[[`Atlantic typed on Home`,{page:`home`,hold:1,org:`Atlantic`}]],
+  rules:[`The search component sits in the blue band of the Home page. It is the same component used on the Search page.`,`Press Search on the Home page: the Search page opens with the same terms in the component and the results below it.`,`The Home page never shows results.`,`The browser Back button returns to the Home page.`],
+  a11y:`Enter in any field runs the search. After the page changes, the result count is announced. The Search link in the main navigation also opens the Search page.`,
+  open:`Confirm the component replaces the current Home search and that the Home page content below the band stays as it is today.`,
+  marks:[[`comp`,`The new search component, in the blue band of the Home page.`],[`orgfield`,`Type here, then press Search.`],[`counts`,`After Search: the Search page shows the count and the results.`]]},
+ {id:0,title:`Refine a search on the Search page`,tries:[[`Atlantic on the Search page`,{org:`Atlantic`}]],
+  rules:[`The Search page has the same component at the top, filled in with the current terms, and the results below it.`,`Change the terms and press Search: the results update in place. The user stays on the Search page.`,`The Organizations and Contacts tabs each keep their own terms and show their own results.`],
+  a11y:`Focus stays in the component until Search is pressed, then the count is announced. Tab order: fields, Search, Clear all, More filters, then results.`,
+  open:``,
+  marks:[[`comp`,`The same component as on Home.`],[`orgfield`,`Terms stay in the field so they can be changed.`],[`counts`,`Results update here, below the component.`]]}
+);
+CASES.push(
+ {id:0,title:`More filters: a filter for every column`,tries:[[`Desktop: Public sector, filters open`,{org:`Atlantic`,sector:`Public`,openF:true}],[`Phone: More filters bar`,{w:390,org:`Atlantic`,sector:`Public`,openF:true}]],
+  rules:[`Every column shown in the results has its own filter. On Organizations that is 11 more filters than the six always visible on desktop.`,`On desktop and tablet, "More filters" sits at the right end of the Search row. On a phone it becomes a full-width bar above the extra fields.`,`Opening it moves focus to the first new field and announces how many filters appeared.`,`Every filter you apply shows as a removable tag under the form.`],
+  a11y:`The button reports expanded or collapsed. Removing a tag returns focus to the next tag, or to More filters when none are left.`,
+  open:`Confirm the 11 Organizations filters and 12 Contacts filters cover every column in the results.`,
+  marks:[[`filt`,`More filters button.`],[`chips`,`An applied filter becomes a removable tag.`],[`orgfield`,`Always-visible fields stay in place.`]]},
+ {id:0,title:`Results table: Sector column and N/A contacts`,tries:[[`Synovus as a table`,{org:`Synovus`,view:`table`}]],
+  rules:[`The Table view has a column for every filter, including Sector.`,`For private-sector organizations the Contacts column shows "N/A", because private-sector organizations have no contacts.`,`Switching between Cards and Table keeps the same results.`],
+  a11y:`Column headers are announced with each cell. The Cards and Table switch reports which view is selected.`,
+  open:`Table or Cards as the default view is still undecided.`,
+  marks:[[`view`,`Cards and Table switch.`],[`table`,`Table view.`],[`sectorcol`,`Sector is its own column.`],[`na`,`N/A: private-sector organizations have no contacts.`]]},
+ {id:0,title:`Clear all`,tries:[[`Atlantic, Public sector, then Clear all`,{org:`Atlantic`,sector:`Public`}]],
+  rules:[`Clear all empties every field, filter and tag in the current tab.`,`It announces "All fields cleared." to screen readers.`,`It does not touch the other tab.`],
+  a11y:`Focus moves to the first field after clearing.`,
+  open:``,
+  marks:[[`clear`,`Clear all, next to Search.`],[`chips`,`Tags disappear when cleared.`]]}
+);
+CASES.forEach((c,i)=>{c.id=i+1;});
+const ct={status:'idle',res:null,page:10,q:null,last:'',ann:'',timer:null,view:'cards'};
+const st={page:'home',tab:'org',idhint:'',q:null,org:'',loc:'',status:'idle',res:null,view:'cards',ctx:{},kidsOpen:{},nodeOpen:new Set(),pages:{},timer:null,bannerOn:true,lastQuery:null,toast:null,cs:null,seen:new Set(),ann:''};
+const $=s=>document.querySelector(s);
+function mk(key){if(!DEV||!st.cs)return '';const i=CASES[st.cs-1].marks.findIndex(m=>m[0]===key);if(i<0||st.seen.has(key))return '';st.seen.add(key);return `<i class="mk" aria-label="Marker ${i+1}">${i+1}</i>`;}
+const NT='<span class="sr"> (opens in a new tab)</span>';
+const lk=n=>`<a class="lk" href="#" data-act="open" data-id="${n.id}">${esc(n.name)}${ic('ext',14)}${NT}</a>`;
+const CH={id:'Force ID',name:'Name',alias:'Alias (dba)',similar:'Similar',location:'Location',filter:'Filters'};
+const where=n=>esc(n.city)+', '+n.st;
+const addr=n=>n.street+', '+n.city+', '+n.st+' '+n.zip;
+const mapUrl=n=>'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addr(n));
+function newTab(html){const w=window.open('','_blank');if(w){try{w.document.write(html);w.document.close();}catch(e){}}}
+const PAGE='<!DOCTYPE html><html lang="en"><meta charset="utf-8"><body style="font:16px system-ui,sans-serif;max-width:560px;margin:40px auto;padding:0 16px;color:#222742;background:#FFF8EB">';
+function openDetail(id){
+  const n=byId[id],p=n.parent?byId[n.parent]:null,k=(kids[id]||[]).length;
+  newTab(PAGE+'<title>'+esc(n.name)+'</title><p style="color:#4A4F6B;margin:0">Organization details (prototype)</p><h1 style="font-size:24px;margin:4px 0 12px">'+esc(n.name)+'</h1><p>Force ID '+n.id+'<br>'+esc(addr(n))+'</p>'+(p?'<p>Parent: '+esc(p.name)+' ('+p.id+')</p>':'<p>Top-level organization</p>')+'<p>'+cnt(k)+'</p>');
+  toast('Opened in a new tab: '+n.name+' ('+n.id+')');}
+function openFamilyPage(id){
+  const n=byId[id],list=kidsOf(id).sort(byName);
+  newTab(PAGE+'<title>'+esc(n.name)+' family</title><p style="color:#4A4F6B;margin:0">Full family (prototype)</p><h1 style="font-size:24px;margin:4px 0 12px">'+esc(n.name)+'</h1><p>'+cnt(list.length)+'</p><ul>'+list.map(c=>'<li>'+esc(c.name)+' · '+c.id+' · '+esc(c.city)+', '+c.st+'</li>').join('')+'</ul>');
+  toast('Opened the full family in a new tab: '+n.name);}
+function narrowHtml(res){if(res.matches.size<100&&res.fams.length<5)return '';return `<div class="narrow">${ic('info',18)}<span>${res.matches.size} matches in ${res.fams.length} families. ${res.l?'Add a name or a filter to narrow the results.':'Add a location or a filter to narrow the results.'}</span>${mk('narrow')}</div>`;}
+
+function row(n,depth,fam){
+  const k=(kids[n.id]||[]).length,m=fam&&fam.matches.get(n.id),open=st.nodeOpen.has('n:'+n.id);
+  return `<li class="crow${m?' hit':''}" style="padding-left:${12+depth*20}px">${k?`<button class="ib" data-act="node" data-key="n:${n.id}" aria-expanded="${open}" aria-label="Child organizations of ${esc(n.name)}">${ic(open?'chevD':'chevR')}</button>`:''}${lk(n)}<span class="mut">${n.id} · ${where(n)}</span><span class="r">${k&&!open?`<span class="mut">${cnt(k)}</span>`:''}${m?`<span class="chip t-${m.t}">${CH[m.t]}</span>`:''}</span></li>`;}
+function rows(pid,depth,fam,key,excl){
+  let list=kidsOf(pid).filter(n=>!(excl&&excl.has(n.id)));
+  list.sort((a,b)=>((fam&&fam.matches.has(b.id))?1:0)-((fam&&fam.matches.has(a.id))?1:0)||byName(a,b));
+  const pg=st.pages[key]||5;let h='';
+  list.slice(0,pg).forEach(n=>{h+=row(n,depth,fam);if(st.nodeOpen.has('n:'+n.id))h+=rows(n.id,depth+1,fam,'n:'+n.id,null);});
+  if(list.length>pg){const left=list.length-pg;h+=`<li class="crow"><button class="more" data-act="more" data-key="${key}">Show ${Math.min(10,left)} more${left>10?' of '+left:''}</button></li>`;}
+  return h;}
+const openFam=n=>(kids[n.id]||[]).length>10?`<a class="lk royal openfam" href="#" data-act="openfam" data-id="${n.id}">Open full family${ic('ext',14)}<span class="sr"> of ${esc(n.name)} (opens in a new tab)</span>${mk('openfam')}</a>`:'';
+
+function matchCard(n,fam){
+  const m=fam.matches.get(n.id),k=(kids[n.id]||[]).length;
+  let h=`<div class="match"><div class="mh"><div><h3 class="nm">${lk(n)}</h3><div class="sub">Force ID ${n.id} · <a class="lk addr" href="${mapUrl(n)}" target="_blank" rel="noopener">${ic('pin',14)}${esc(addr(n))}<span class="sr"> (opens Google Maps in a new tab)</span></a>${mk('addr')}</div><div class="sub">${meta(n)}${mk('profile')}</div></div><span class="badge">Matches your search${mk('badge')}</span></div><div class="why">${ic('check')}<span>${esc(m.reason)}</span>${mk('reason')}</div>`;
+  if(k){const open=!!st.kidsOpen[n.id],hits=fam.dcount[n.id]||0;
+    h+=`<div class="kc"><button class="kt" data-act="kids" data-id="${n.id}" aria-expanded="${open}"${open?` aria-controls="kb-${n.id}"`:''}>${ic(open?'chevD':'chevR')}${cnt(k)}${hits?' · '+hits+' match'+(hits>1?'es':''):''}<span class="sr"> in ${esc(n.name)}</span></button>${mk('kids')}${open?`<div class="kb" id="kb-${n.id}"><ul class="crows">${rows(n.id,0,fam,'k:'+n.id,null)}</ul>${openFam(n)}</div>`:''}</div>`;}
+  return h+'</div>';}
+function ctxCard(n,fam,depth){
+  const k=(kids[n.id]||[]).length,key='c:'+n.id,strong=fam.strong.has(n.id),dc=fam.dcount[n.id]||0;
+  const open=(key in st.ctx)?st.ctx[key]:strong;
+  let h=`<div class="ctx${depth?' nest':''}"><div class="ch"><button class="ib" data-act="ctx" data-key="${key}" aria-expanded="${open}"${open?` aria-controls="ct-${n.id}"`:''} aria-label="Child organizations of ${esc(n.name)}">${ic(open?'chevD':'chevR')}</button><h3>${lk(n)}</h3><span class="mut">${n.id} · ${cnt(k)}</span>${!open&&dc?`<span class="hint">· ${dc} ${strong?'':'similar '}match${dc>1?'es':''} inside</span>${mk('hint')}`:''}${mk(depth?'nest':'ctx')}</div>`;
+  if(open){
+    const rel=kidsOf(n.id).filter(c=>fam.matches.has(c.id)||fam.anc.has(c.id)).sort(byName);
+    h+=`<ul class="tree" id="ct-${n.id}">`;
+    rel.forEach(c=>{h+='<li>'+(fam.matches.has(c.id)?matchCard(c,fam):ctxCard(c,fam,depth+1))+'</li>';});
+    const others=k-rel.length;
+    if(others>0){const ok='oth:'+n.id,oo=st.nodeOpen.has(ok);
+      h+=`<li><button class="kt royal" data-act="node" data-key="${ok}" aria-expanded="${oo}">${ic(oo?'chevD':'chevR')}${oo?'Hide':'Show'} the other ${cnt(others)}<span class="sr"> in ${esc(n.name)}</span></button>${mk('others')}`;
+      if(oo)h+=`<div class="kb"><ul class="crows">${rows(n.id,0,fam,ok,new Set(rel.map(c=>c.id)))}</ul>${openFam(n)}</div>`;
+      h+='</li>';}
+    h+='</ul>';}
+  return h+'</div>';}
+function famHtml(fam){const root=byId[fam.root];return '<li class="fam">'+(fam.matches.has(root.id)?matchCard(root,fam):ctxCard(root,fam,0))+'</li>';}
+
+const money=x=>x==null?'N/A':'$'+x.toLocaleString('en-US');
+const yn=b=>b?'Yes':'No';
+const trendTxt=n=>n.trend===0?'0%':(n.trend>0?'Up ':'Down ')+Math.abs(n.trend)+'%';
+const ORGTH=['Sector','Market segment','Size band','Engagement score','Contracts used LTM','Significant capital (3 yrs)','Contacts','Category sales potential','LTM supplier sales and trend','Current or prospect','OPUS access','Pinned'];
+const orgCells=n=>`<td>${esc(n.sector)}${mk('sectorcol')}</td><td>${n.seg?esc(n.seg):'N/A'}</td><td>${n.size}</td><td>${n.score.toFixed(1)} <span class="mut">${ENGL[engKey(n.score)]}</span></td><td>${n.cu}</td><td>${yn(n.cap)}</td><td>${n.contacts==null?'N/A'+mk('na'):n.contacts}</td><td>${money(n.pot)}</td><td>${money(n.sales)} <span class="mut">${trendTxt(n)}</span></td><td>${n.status}</td><td>${yn(n.opus)}</td><td>${yn(n.pin)}</td>`;
+function tableHtml(res){
+  const flat=[];res.fams.forEach(f=>{[...f.matches.keys()].map(id=>byId[id]).sort((a,b)=>anc(a.id).length-anc(b.id).length||byName(a,b)).forEach(n=>flat.push({n,m:f.matches.get(n.id)}));});
+  const pg=st.pages.tbl||15;let h=`<div class="tw" tabindex="0" role="region" aria-label="Matching organizations table, scrollable"><table><caption class="sr">Matching organizations</caption><thead><tr><th scope="col">Organization${mk('table')}</th><th scope="col">Match</th>${ORGTH.map(x=>`<th scope="col">${x}</th>`).join('')}</tr></thead><tbody>`;
+  flat.slice(0,pg).forEach(({n,m})=>{const k=(kids[n.id]||[]).length,open=st.nodeOpen.has('t:'+n.id);
+    h+=`<tr><td>${k?`<button class="ib" data-act="node" data-key="t:${n.id}" aria-expanded="${open}" aria-label="Child organizations of ${esc(n.name)}">${ic(open?'chevD':'chevR')}</button>`:''}${lk(n)}${k&&!open?` <span class="mut">${cnt(k)}</span>`:''}<div class="sub">Force ID ${n.id} · ${where(n)}${n.parent?' · Part of '+lk(byId[n.parent]):''}</div></td><td><span class="chip t-${m.t}">${CH[m.t]}</span> <span class="mut">${esc(m.reason)}</span></td>${orgCells(n)}</tr>`;
+    if(open){const ks=kidsOf(n.id);ks.slice(0,10).forEach(c=>{h+=`<tr class="subrow"><td style="padding-left:44px">${lk(c)}<div class="sub">Force ID ${c.id} · ${where(c)}</div></td><td></td>${orgCells(c)}</tr>`;});if(ks.length>10)h+=`<tr class="subrow"><td colspan="${2+ORGTH.length}" style="padding-left:44px">+ ${ks.length-10} more child organizations</td></tr>`;}});
+  h+='</tbody></table></div>';
+  if(flat.length>pg)h+=`<p><button class="more" data-act="more" data-key="tbl">Show 15 more of ${flat.length-pg}</button></p>`;
+  return h;}
+function bucketText(res){const ks=Object.keys(res.types);if(ks.length<2)return '';return ' · '+['id','name','alias','similar','location','filter'].filter(k=>res.types[k]).map(k=>res.types[k]+' '+CH[k].toLowerCase()).join(' · ');}
+function countText(res){return res.matches.size+' match'+(res.matches.size===1?'':'es')+' in '+res.fams.length+' '+(res.fams.length===1?'family':'families');}
+
+function renderLegend(){
+  if(!DEV||!st.cs){$('#legend-home').innerHTML='';$('#legend-search').innerHTML='';return;}
+  const c=CASES[st.cs-1];
+  const h=`<section class="legend" aria-label="Dev marker legend for use case ${c.id}"><div class="lt"><span class="dt">Dev overlay, not part of the design</span><strong>Use case ${c.id}: ${esc(c.title)}</strong><button type="button" data-act="gocases">Back to use cases</button></div><div>What to look for:</div><ol>${c.marks.map((m,i)=>`<li><i class="mk">${i+1}</i><span>${esc(m[1])}</span></li>`).join('')}</ol></section>`;
+  $('#legend-home').innerHTML=h;$('#legend-search').innerHTML=h;}
+function idhintHtml(){return st.idhint?`<div class="narrow" role="note">${ic('info',18)}<span>That looks like a Force ID.</span><button type="button" data-act="useid">Search Force ID ${esc(st.idhint)} instead</button>${mk('idhint')}</div>`:'';}
+const fdate=d=>d?new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';
+function cTable(r){
+  let h=`<div class="tw" tabindex="0" role="region" aria-label="Matching contacts table, scrollable"><table><caption class="sr">Matching contacts</caption><thead><tr>${['Contact','Organization','Title','Department','Email','Phone','Last activity','Role','Purchasing influencer','Purchasing decision maker','Areas of interest','OPUS access','Pinned','Match'].map(x=>`<th scope="col">${x}</th>`).join('')}</tr></thead><tbody>`;
+  r.slice(0,ct.page).forEach(({c,o,reason})=>{h+=`<tr><td><strong>${esc(c.name)}</strong></td><td>${lk(o)}<div class="sub">${where(o)}</div></td><td>${esc(c.title)}</td><td>${esc(c.dept)}</td><td>${esc(c.email)}</td><td>${esc(c.phone)}</td><td>${fdate(c.last)||'<span class="mut">None</span>'}</td><td>${esc(c.role)}</td><td>${yn(c.infl)}</td><td>${yn(c.dm)}</td><td>${esc(c.areas.join(', '))}</td><td>${yn(c.opus)}</td><td>${yn(c.pin)}</td><td class="mut">${esc(reason)}</td></tr>`;});
+  return h+'</tbody></table></div>';}
+function renderContacts(){
+  const el=$('#cresults');
+  if(ct.status==='idle'){ct.ann='';el.innerHTML='';return;}
+  if(ct.status==='loading'){ct.ann='Searching contacts';el.innerHTML=`<div class="state" role="status" aria-busy="true"><div class="sk" style="width:60%"></div><div class="sk" style="width:90%"></div><div class="sk" style="width:45%;margin-bottom:16px"></div><h2 tabindex="-1">Searching contacts…</h2><p>Searches can take up to 15 seconds.</p><button type="button" data-act="ccancel">Cancel search</button></div>`;return;}
+  if(ct.status==='canceled'){ct.ann='Search canceled';el.innerHTML='<div class="state"><h2 tabindex="-1">Search canceled</h2><p>Your search terms are still in the fields.</p><button type="button" class="primary" data-act="csearch">Search again</button></div>';return;}
+  if(ct.status==='error'){ct.ann='Couldn\'t load results. Your search wasn\'t lost.';el.innerHTML=`<div class="state err" role="alert"><h2 tabindex="-1">Couldn't load results</h2><p>Your search wasn't lost. Try again.</p><button type="button" class="primary" data-act="csearch">Retry</button></div>`;return;}
+  const r=ct.res;
+  if(!r.length){ct.ann='No contacts match '+ct.last;el.innerHTML=`<div class="state"><h2 tabindex="-1">No contacts match ${esc(ct.last)}</h2><p>${esc(cEmptyMsg(ct.q))}${mk('cempty')}</p><button type="button" data-act="cclear">Clear search</button></div>`;return;}
+  const orgs=new Set(r.map(x=>x.o.id)).size,txt=r.length+' contact'+(r.length===1?'':'s')+' at '+orgs+' organization'+(orgs===1?'':'s');
+  ct.ann=txt;
+  let h=`<div class="bar"><h2 tabindex="-1">${txt}${mk('ccount')}</h2><span class="sp2"></span><div class="seg" role="group" aria-label="Show contacts as"><button type="button" data-act="cview" data-v="cards" aria-pressed="${ct.view==='cards'}">Cards</button><button type="button" data-act="cview" data-v="table" aria-pressed="${ct.view==='table'}">Table</button></div></div>`;
+  if(ct.view==='table')h+=cTable(r);
+  else{h+='<ul class="fams">';
+    r.slice(0,ct.page).forEach(({c,o,reason})=>{
+      const rt=byId[rootOf(o.id)];
+      h+=`<li class="fam"><div class="mh"><div><h3 class="nm">${esc(c.name)}${mk('cname')}</h3><div class="sub">${esc(c.title)} · ${esc(c.dept)}</div><div class="sub">Role: ${esc(c.role)} · Purchasing decision maker: ${yn(c.dm)} · Purchasing influencer: ${yn(c.infl)}</div><div class="sub">${esc(c.email)} · ${esc(c.phone)}</div></div></div><div class="orgline">Works at ${lk(o)}${mk('corg')}<div class="sub">Force ID ${o.id} · ${where(o)}</div>${o.parent?`<div class="sub">Part of ${lk(rt)}${mk('cparent')}</div>`:''}</div><div class="why">${ic('check')}<span>${esc(reason)}</span>${mk('creason')}</div></li>`;});
+    h+='</ul>';}
+  if(r.length>ct.page)h+=`<button type="button" class="more" data-act="cmore">Show 10 more of ${r.length-ct.page}</button>`;
+  el.innerHTML=h;}
+function renderResults(){
+  const el=$('#results');let h='';
+  if(st.status==='idle'){st.ann='';el.innerHTML='';return;}
+  if(st.status==='loading'){st.ann='Searching organizations';el.innerHTML=`<div class="state" role="status" aria-busy="true"><div class="sk" style="width:60%"></div><div class="sk" style="width:90%"></div><div class="sk" style="width:45%;margin-bottom:16px"></div><h2 tabindex="-1">Searching organizations…${mk('loading')}</h2><p>Searches can take up to 15 seconds.</p><button type="button" data-act="cancel">Cancel search</button></div>`;return;}
+  if(st.status==='canceled'){st.ann='Search canceled';el.innerHTML='<div class="state"><h2 tabindex="-1">Search canceled</h2><p>Your search terms are still in the fields.</p><button type="button" class="primary" data-act="search">Search again</button></div>';return;}
+  if(st.status==='error'){st.ann='Couldn\'t load results. Your search wasn\'t lost.';el.innerHTML=`<div class="state err" role="alert"><h2 tabindex="-1">Couldn't load results${mk('error')}</h2><p>Your search wasn't lost. Try again.</p><button type="button" class="primary" data-act="search">Retry</button></div>`;return;}
+  const res=st.res;
+  if(!res.matches.size){
+    st.ann='No organizations match '+st.lastQuery;
+    el.innerHTML=idhintHtml()+`<div class="state"><h2 tabindex="-1">No organizations match ${esc(st.lastQuery)}${mk('empty')}</h2><p>Check the spelling, or try fewer words.</p><button type="button" data-act="clear">Clear search</button></div>`;return;}
+  st.ann=countText(res);
+  h+=idhintHtml();h+=`<div class="bar"><h2 tabindex="-1">${countText(res)}${bucketText(res)}${mk('counts')}</h2><span class="sp2"></span><div class="seg" role="group" aria-label="Show results as"><button type="button" data-act="view" data-v="cards" aria-pressed="${st.view==='cards'}">Cards</button><button type="button" data-act="view" data-v="table" aria-pressed="${st.view==='table'}">Table</button></div>${mk('view')}</div>`;
+  h+=narrowHtml(res);
+  if(st.view==='table')h+=tableHtml(res);
+  else{const pg=st.pages.fam||8;h+='<ul class="fams">';res.fams.slice(0,pg).forEach(f=>h+=famHtml(f));h+='</ul>';if(res.fams.length>pg)h+=`<button type="button" class="more" data-act="more" data-key="fam">Show more families (${res.fams.length-pg} left)</button>`;}
+  el.innerHTML=h;}
+
+function renderChrome(){
+  document.querySelectorAll('[data-mk]').forEach(e=>{e.innerHTML=mk(e.dataset.mk);});
+  ['seg','eng'].forEach(k=>{const b=document.getElementById('b-'+k);if(!b)return;let sp=b.parentElement.querySelector('.mkms');if(!sp){sp=document.createElement('span');sp.className='mkms';b.parentElement.appendChild(sp);}sp.innerHTML=mk(k);});
+  $('#banner').innerHTML=st.bannerOn?`<section class="banner" aria-label="Search update">${ic('info',20)}<div><h2>Search has changed${mk('banner')}</h2>Organization name searches names and aliases. Force ID is now its own field, and Location covers city, county, state and ZIP.<br><a class="lk" href="#" data-act="whatsnew">See what's new${ic('ext',14)}<span class="sr"> (opens in a new tab)</span></a></div><button type="button" class="x" data-act="dismissbanner" aria-label="Dismiss search update">${ic('x',20)}</button></section>`:'';
+  $('#toast').innerHTML=st.toast?`<div class="toast">${esc(st.toast.msg)}</div>`:'';}
+let lastFocus=null;
+function render(){
+  st.seen=new Set();renderChrome();renderLegend();renderResults();const a1=st.ann;renderContacts();st.ann=st.tab==='org'?a1:ct.ann;updateFcounts();
+  if(lastFocus){const l=lastFocus;lastFocus=null;let t=null;
+    document.querySelectorAll('[data-act="'+l.act+'"]').forEach(e=>{if(!t&&(e.dataset.id||'')===l.id&&(e.dataset.key||'')===l.key&&(e.dataset.v||'')===l.v)t=e;});
+    if(!t){const h=$((st.tab==='org'?'#results':'#cresults')+' h2');if(h)t=h;}
+    if(t)t.focus({preventScroll:false});}
+  const a=$('#announce');const msg=st.say||st.ann;if(st.say)a.dataset.last='';st.say='';if(msg!==a.dataset.last){a.dataset.last=msg;a.textContent='';setTimeout(()=>{a.textContent=msg;},60);}}
+
+function toast(msg){st.toast={msg};}
+const narrow=()=>$('#searchcomp').parentElement.getBoundingClientRect().width<632;
+const idOf=(f,part)=>'f-'+f.k+(part||'');
+function readOne(f){const id=idOf(f);switch(f.t){case 'sel':return $('#'+id).value;case 'ms':return [...MS[f.k].set];case 'rng':return {a:$('#'+id+'-min').value.trim(),b:$('#'+id+'-max').value.trim()};case 'dat':return {a:$('#'+id+'-from').value,b:$('#'+id+'-to').value};case 'chk':return $('#'+id).checked;default:return $('#'+id).value.trim();}}
+const emptyOf=f=>f.t==='ms'?[]:(f.t==='rng'||f.t==='dat')?{a:'',b:''}:f.t==='chk'?false:'';
+function setOne(f,v){const id=idOf(f);switch(f.t){case 'sel':$('#'+id).value=v||'';break;case 'ms':setMs(f.k,Array.isArray(v)?v:[]);break;case 'rng':$('#'+id+'-min').value=(v&&v.a)||'';$('#'+id+'-max').value=(v&&v.b)||'';break;case 'dat':$('#'+id+'-from').value=(v&&v.a)||'';$('#'+id+'-to').value=(v&&v.b)||'';break;case 'chk':$('#'+id).checked=!!v;break;default:$('#'+id).value=v||'';}}
+const isSet=(f,v)=>f.t==='ms'?v.length>0:(f.t==='rng'||f.t==='dat')?(v.a!==''||v.b!==''):f.t==='chk'?v===true:v!=='';
+function describe(f,v){const L=f.label.replace(' (minimum)','');
+  if(f.t==='sel')return L+': '+f.opts.find(o=>o[0]===v)[1];
+  if(f.t==='ms')return L+': '+v.map(x=>(MS[f.k].opts.find(o=>o[0]===x)||[x,x])[1]).join(' or ');
+  if(f.t==='rng'){const m=f.money?'$':'';return L+': '+(v.a!==''&&v.b!==''?m+v.a+' to '+m+v.b:v.a!==''?'at least '+m+v.a:'up to '+m+v.b);}
+  if(f.t==='dat')return L+': '+(v.a&&v.b?v.a+' to '+v.b:v.a?'from '+v.a:'until '+v.b);
+  if(f.t==='min')return L+': at least '+v;
+  if(f.t==='chk')return f.text;
+  return L+': '+v;}
+const readF=list=>{const o={};list.forEach(f=>{o[f.k]=readOne(f);});return o;};
+const readOrg=()=>({org:$('#org').value,fid:$('#fid').value,loc:$('#loc').value,f:readF(OF)});
+const readCon=()=>({cname:$('#cname').value,org:$('#corg').value,fid:$('#cfid').value,loc:$('#cloc').value,f:readF(CFL)});
+const applied=(list,q)=>list.filter(f=>isSet(f,q.f[f.k])).map(f=>({f,text:describe(f,q.f[f.k])}));
+function badNum(list,q){for(const f of list){const v=q.f[f.k];const parts=f.t==='rng'?[['-min',v.a],['-max',v.b]]:f.t==='min'?[['',v]]:[];for(const p of parts){if(p[1]!==''&&!/^\$?[\d,]+$/.test(p[1]))return {f,id:idOf(f,p[0])};}}return null;}
+function inv(ids){['org','fid','loc','cname','corg','cfid','cloc'].forEach(i=>$('#'+i).removeAttribute('aria-invalid'));ids.forEach(i=>$('#'+i).setAttribute('aria-invalid','true'));}
+const qText=p=>'"'+p.filter(Boolean).join(' + ')+'"';
+function runSearch(){
+  const q=readOrg(),fe=$('#formerr');
+  if(q.fid.trim()&&!/^\d+$/.test(q.fid.trim())){fe.textContent='Force ID can only contain numbers.';inv(['fid']);$('#fid').focus();return;}
+  const bn=badNum(OF,q);if(bn){fe.textContent=bn.f.label.replace(' (minimum)','')+' must be a number.';openMore('org',true);$('#'+bn.id).focus();return;}
+  const ap=applied(OF,q);
+  if(!(q.org.trim()||q.fid.trim()||q.loc.trim()||ap.length)){fe.textContent='Enter a name, a Force ID or a location, or choose a filter.';inv(['org','fid','loc']);$('#org').focus();return;}
+  fe.textContent='';inv([]);
+  go('search');
+  st.toast=null;st.q=q;st.idhint=(/^\d{4,}$/.test(q.org.trim())&&!q.fid.trim())?q.org.trim():'';
+  st.lastQuery=qText([q.org.trim(),q.fid.trim()&&'Force ID '+q.fid.trim(),q.loc.trim()].concat(ap.map(a=>a.text)));
+  st.ctx={};st.kidsOpen={};st.nodeOpen=new Set();st.pages={};
+  clearTimeout(st.timer);st.status='loading';render();
+  const delay=$('#slow').checked?6000:900;
+  st.timer=setTimeout(()=>{
+    if($('#fail').checked){$('#fail').checked=false;st.status='error';render();return;}
+    st.res=compute(q);st.status='done';render();},delay);}
+function runContacts(){
+  const q=readCon(),fe=$('#cformerr');
+  if(q.fid.trim()&&!/^\d+$/.test(q.fid.trim())){fe.textContent='Force ID can only contain numbers.';inv(['cfid']);$('#cfid').focus();return;}
+  const ap=applied(CFL,q);
+  if(!(q.cname.trim()||q.org.trim()||q.fid.trim()||q.loc.trim()||ap.length)){fe.textContent='Enter a contact name, an organization, a Force ID or a location, or choose a filter.';inv(['cname','corg','cfid','cloc']);$('#cname').focus();return;}
+  fe.textContent='';inv([]);
+  go('search');
+  ct.q=q;ct.page=10;ct.last=qText([q.cname.trim(),q.org.trim(),q.fid.trim()&&'Force ID '+q.fid.trim(),q.loc.trim()].concat(ap.map(a=>a.text)));
+  clearTimeout(ct.timer);ct.status='loading';render();
+  const delay=$('#slow').checked?6000:900;
+  ct.timer=setTimeout(()=>{
+    if($('#fail').checked){$('#fail').checked=false;ct.status='error';render();return;}
+    ct.res=computeC(q);ct.status='done';render();},delay);}
+
+/* tabs, filters panel, chips, multi-select dropdowns */
+function say(m){const a=$('#announce');a.dataset.last=m;a.textContent='';setTimeout(()=>{a.textContent=m;},60);}
+function placeFilt(){const nr=narrow();[['org','#mid-org'],['con','#extra-con']].forEach(([k,anchor])=>{const b=$('#filt-'+k),acts=(k==='org'?$('#form'):$('#cform')).querySelector('.actions');
+  const hadFocus=document.activeElement===b;
+  if(nr){if(b.nextElementSibling!==$(anchor)||b.parentElement!==$(anchor).parentElement)$(anchor).before(b);b.classList.add('asbar');}
+  else{if(b.parentElement!==acts)acts.append(b);b.classList.remove('asbar');}
+  if(hadFocus)b.focus();});}
+function setTab(t){st.tab=t;['org','con'].forEach(k=>{const on=k===t,b=$('#tab-'+k);b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1;$('#panel-'+k).hidden=!on;});$('#results-section').hidden=t!=='org';$('#cresults-section').hidden=t!=='con';$('.skip').setAttribute('href',t==='org'?'#results-section':'#cresults-section');}
+function setWidth(w){$('#frame').style.maxWidth=w?w+'px':'';$('#frame').classList.toggle('framed',!!w);document.body.classList.toggle('emu',!!w);document.querySelectorAll('[data-act="width"]').forEach(b=>b.setAttribute('aria-pressed',String((+b.dataset.w||0)===(w||0))));placeFilt();updateFcounts();}
+function showPage(p){st.page=p;$('#view-home').hidden=p!=='home';$('#view-search').hidden=p!=='search';$(p==='home'?'#host-home':'#host-search').appendChild($('#searchcomp'));
+  document.querySelectorAll('[data-act="gopage"]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.p===p)));
+  document.querySelectorAll('.nav a[data-p]').forEach(a=>{if(a.dataset.p===p)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
+  placeFilt();updateFcounts();}
+function go(p){if(st.page===p)return;try{history.pushState(null,'','#'+p);}catch(e){}showPage(p);}
+window.addEventListener('popstate',()=>{showPage(location.hash==='#search'?'search':'home');render();});
+function openMore(k,on){$(k==='org'?'#form':'#cform').classList.toggle('fopen',on);$('#filt-'+k).setAttribute('aria-expanded',String(on));}
+const chipHtml=(x,p)=>`<li class="chipx"><span>${esc(x.text)}</span>${mk('chips')}<button type="button" class="ib" data-act="rmf" data-f="${x.f.k}" data-p="${p}" aria-label="Remove filter: ${esc(x.text)}">${ic('x',16)}</button></li>`;
+function updateFcounts(){
+  const qo=readOrg(),qc=readCon(),ao=applied(OF,qo),ac=applied(CFL,qc);
+  const eo=ao.filter(a=>a.f.g==='x').length+(narrow()?ao.filter(a=>a.f.g==='mid').length:0);
+  $('#filt-org .cnt').textContent=eo?' ('+eo+' applied)':'';$('#filt-con .cnt').textContent=ac.length?' ('+ac.length+' applied)':'';
+  $('#chips-org').innerHTML=ao.map(x=>chipHtml(x,'org')).join('');$('#chips-con').innerHTML=ac.map(x=>chipHtml(x,'con')).join('');}
+const msHost=k=>document.querySelector('.ms[data-key="'+k+'"]');
+function msSync(k){const m=MS[k],h=msHost(k),n=m.set.size;
+  h.querySelector('.msv').textContent=n===0?'Not selected':n===1?(m.opts.find(o=>o[0]===[...m.set][0])||['',''])[1]:n+' selected';
+  const all=h.querySelector('input[data-all]');if(all){all.checked=m.opts.length>0&&n===m.opts.length;all.indeterminate=n>0&&n<m.opts.length;}
+  if(k==='seg')rebuildSub();updateFcounts();}
+function setMs(k,vals){MS[k].set=new Set(vals);const h=msHost(k);h.querySelectorAll('input[data-v]').forEach(i=>{i.checked=MS[k].set.has(i.dataset.v);});msSync(k);}
+function rebuildSub(){const opts=[...new Set([...MS.seg.set].flatMap(x=>SUB[x]||[]))].map(x=>[x,x]);const keep=[...MS.sub.set].filter(v=>opts.some(o=>o[0]===v));MS.sub.opts=opts;MS.sub.set=new Set(keep);buildMs('sub',msHost('sub'));const h=msHost('sub');h.querySelectorAll('input[data-v]').forEach(i=>{i.checked=MS.sub.set.has(i.dataset.v);});const n=MS.sub.set.size;h.querySelector('.msv').textContent=n===0?'Not selected':n===1?[...MS.sub.set][0]:n+' selected';const all=h.querySelector('input[data-all]');if(all){all.checked=opts.length>0&&n===opts.length;all.indeterminate=n>0&&n<opts.length;}}
+function closeMs(keep){document.querySelectorAll('.msp:not([hidden])').forEach(p=>{if(keep&&keep.contains(p))return;p.hidden=true;$('#b-'+p.id.slice(2)).setAttribute('aria-expanded','false');});}
+function buildMs(k,h){const m=MS[k],none=!m.opts.length;
+  h.innerHTML=`<div class="lab"><span id="l-${k}">${m.label}</span>${k==='eng'?`<button type="button" class="ib" data-act="enghelp" aria-expanded="false" aria-controls="enghelp" aria-label="About engagement score">${ic('info',18)}</button>`:''}</div><button type="button" class="msb" id="b-${k}" data-act="ms" data-key="${k}" aria-expanded="false" aria-controls="p-${k}" aria-labelledby="l-${k} v-${k}"${none?' disabled aria-describedby="d-'+k+'"':''}><span class="msv" id="v-${k}">Not selected</span>${ic('chevD')}</button>${none?`<p class="help" id="d-${k}">Choose a market segment first.</p>`:''}${k==='eng'?'<p class="help" id="enghelp" hidden>Engagement score runs from 0 to 10. Explanation copy to come.</p>':''}<div class="msp" id="p-${k}" hidden role="group" aria-labelledby="l-${k}">${m.opts.length>6?`<input type="text" class="mss" aria-label="Search ${m.label.toLowerCase()} options" placeholder="Search" autocomplete="off">`:''}<ul><li><label class="opt"><input type="checkbox" data-all> Select all</label></li>${m.opts.map(o=>`<li data-t="${esc(o[1].toLowerCase())}"><label class="opt"><input type="checkbox" data-v="${esc(o[0])}"> ${esc(o[1])}</label></li>`).join('')}</ul><div class="sr" role="status" data-st></div></div>`;}
+function ctl(f){const id=idOf(f);
+  if(f.t==='ms')return `<div class="ms" data-key="${f.k}"></div>`;
+  if(f.t==='sel')return `<div><label for="${id}">${f.label}</label><select id="${id}">${f.opts.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('')}</select></div>`;
+  if(f.t==='rng')return `<fieldset class="rng"><legend class="lab">${f.label}</legend><div class="two"><div><label for="${id}-min">Minimum</label><input type="text" id="${id}-min" inputmode="numeric" autocomplete="off"></div><div><label for="${id}-max">Maximum</label><input type="text" id="${id}-max" inputmode="numeric" autocomplete="off"></div></div></fieldset>`;
+  if(f.t==='dat')return `<fieldset class="rng"><legend class="lab">${f.label}</legend><div class="two"><div><label for="${id}-from">From</label><input type="date" id="${id}-from"></div><div><label for="${id}-to">To</label><input type="date" id="${id}-to"></div></div></fieldset>`;
+  if(f.t==='chk')return `<div><label class="opt"><input type="checkbox" id="${id}"> ${f.text}</label></div>`;
+  return `<div><label for="${id}">${f.label}</label><input type="text" id="${id}" autocomplete="off" enterkeyhint="search"${f.t==='min'?' inputmode="numeric"':''}></div>`;}
+function buildFilters(){
+  $('#mid-org').innerHTML=OF.filter(f=>f.g==='mid').map(ctl).join('');
+  $('#extra-org').innerHTML=OF.filter(f=>f.g==='x').map(ctl).join('');
+  $('#extra-con').innerHTML=CFL.map(ctl).join('');}
+function clearOrg(){['org','fid','loc'].forEach(i=>{$('#'+i).value='';});OF.forEach(f=>setOne(f,emptyOf(f)));$('#formerr').textContent='';inv([]);st.status='idle';st.toast=null;st.idhint='';updateFcounts();}
+function clearCon(){['cname','corg','cfid','cloc'].forEach(i=>{$('#'+i).value='';});CFL.forEach(f=>setOne(f,emptyOf(f)));$('#cformerr').textContent='';inv([]);ct.status='idle';updateFcounts();}
+function applyQ(q){
+  if('w' in q)setWidth(q.w);
+  if(q.view)st.view=q.view;if(q.cview)ct.view=q.cview;
+  const t=q.tab||'org';setTab(t);
+  if(t==='org'){clearOrg();$('#org').value=q.org||'';$('#fid').value=q.fid||'';$('#loc').value=q.loc||'';OF.forEach(f=>{if(f.k in q)setOne(f,q[f.k]);});const a=applied(OF,readOrg());if(a.some(x=>x.f.g==='x'||narrow()))openMore('org',true);}
+  else{clearCon();$('#cname').value=q.cname||'';$('#corg').value=q.org||'';$('#cfid').value=q.fid||'';$('#cloc').value=q.loc||'';CFL.forEach(f=>{if(f.k in q)setOne(f,q[f.k]);});if(applied(CFL,readCon()).length)openMore('con',true);}
+  updateFcounts();}
+const smooth=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth';
+function scrollToEl(sel){const e=$(sel);if(e&&e.scrollIntoView)e.scrollIntoView({behavior:smooth(),block:'start'});}
+
+$('#form').addEventListener('submit',e=>{e.preventDefault();st.cs=null;lastFocus=null;runSearch();});
+$('#cform').addEventListener('submit',e=>{e.preventDefault();st.cs=null;lastFocus=null;runContacts();});
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.ms'))closeMs();
+  const el=e.target.closest('[data-act]');if(!el)return;
+  const a=el.dataset.act;if(['open','openfam','whatsnew','nav','navx'].includes(a))e.preventDefault();
+  lastFocus={act:a,id:el.dataset.id||'',key:el.dataset.key||'',v:el.dataset.v||''};
+  switch(a){
+    case 'search':lastFocus=null;runSearch();return;
+    case 'csearch':lastFocus=null;runContacts();return;
+    case 'ms':{lastFocus=null;const k=el.dataset.key,p=$('#p-'+k),was=!p.hidden;closeMs();if(!was){p.hidden=false;el.setAttribute('aria-expanded','true');const f=p.querySelector('.mss')||p.querySelector('input');if(f)f.focus();}return;}
+    case 'enghelp':{lastFocus=null;const h=$('#enghelp'),on=h.hidden;h.hidden=!on;el.setAttribute('aria-expanded',String(on));return;}
+    case 'filt':{lastFocus=null;const k=el.dataset.key,on=el.getAttribute('aria-expanded')!=='true';openMore(k,on);
+      if(on){const nr=narrow(),n=(k==='org'?OF.filter(f=>f.g==='x'||nr).length:CFL.length),host=(k==='org'&&nr)?$('#mid-org'):$('#extra-'+k),f=host.querySelector('select,input,button:not([disabled])');if(f)f.focus();say('Showing '+n+' more filters.');}
+      else say('More filters hidden.');return;}
+    case 'rmf':{lastFocus=null;const p=el.dataset.p,f=(p==='org'?OF:CFL).find(x=>x.k===el.dataset.f);setOne(f,emptyOf(f));updateFcounts();
+      const nb=$('#chips-'+p+' button');(nb||$('#filt-'+p)).focus();
+      if(p==='org'&&st.status==='done')runSearch();if(p==='con'&&ct.status==='done')runContacts();return;}
+    case 'width':lastFocus=null;setWidth(+el.dataset.w);return;
+    case 'gopage':lastFocus=null;go(el.dataset.p);render();window.scrollTo(0,0);return;
+    case 'nav':lastFocus=null;go(el.dataset.p);render();scrollToEl('#frame');return;
+    case 'navx':{lastFocus=null;const m='Not part of this prototype.';$('#navnote').textContent=m;setTimeout(()=>{$('#navnote').textContent='';},2500);return;}
+    case 'hidetop':lastFocus=null;$('#topbanner').hidden=true;return;
+    case 'tab':setTab(el.dataset.key);break;
+    case 'try':{lastFocus=null;const q=JSON.parse(el.dataset.q);st.cs=+el.dataset.case;applyQ(q);
+      if(q.page==='home')showPage('home');
+      const has=Object.keys(q).some(k=>!['w','tab','openF','view','cview','page','hold'].includes(k));
+      if(q.hold||!has){if(!q.hold)st.bannerOn=true;st.status='idle';ct.status='idle';showPage('home');render();scrollToEl('#frame');return;}
+      (st.tab==='con'?runContacts:runSearch)();
+      scrollToEl(st.tab==='con'?'#cresults-section':'#results-section');return;}
+    case 'useid':{lastFocus=null;$('#fid').value=st.idhint;$('#org').value='';runSearch();return;}
+    case 'gocases':lastFocus=null;scrollToEl('#cover-top');return;
+    case 'open':openDetail(el.dataset.id);break;
+    case 'openfam':openFamilyPage(el.dataset.id);break;
+    case 'whatsnew':toast('Opens the search release notes in a new tab.');break;
+    case 'ctx':{const k=el.dataset.key,id=k.slice(2);const fam=st.res.fams.find(f=>f.root===rootOf(id));const cur=(k in st.ctx)?st.ctx[k]:fam.strong.has(id);st.ctx[k]=!cur;break;}
+    case 'kids':st.kidsOpen[el.dataset.id]=!st.kidsOpen[el.dataset.id];break;
+    case 'node':{const k=el.dataset.key;st.nodeOpen.has(k)?st.nodeOpen.delete(k):st.nodeOpen.add(k);break;}
+    case 'more':{const k=el.dataset.key;st.pages[k]=(st.pages[k]||(k==='tbl'?15:(k==='fam'?8:5)))+(k==='tbl'?15:(k==='fam'?8:10));break;}
+    case 'cmore':ct.page+=10;break;
+    case 'view':st.view=el.dataset.v;break;
+    case 'cview':ct.view=el.dataset.v;break;
+    case 'cancel':clearTimeout(st.timer);st.status='canceled';break;
+    case 'ccancel':clearTimeout(ct.timer);ct.status='canceled';break;
+    case 'clear':case 'clearall':clearOrg();st.say='All fields cleared.';break;
+    case 'cclear':case 'cclearall':clearCon();st.say='All fields cleared.';break;
+    case 'dismissbanner':st.bannerOn=false;lastFocus=null;$('#org').focus();break;
+  }
+  render();});
+document.addEventListener('change',e=>{const i=e.target;
+  if(i.matches('.msp input[type=checkbox]')){const h=i.closest('.ms'),k=h.dataset.key,m=MS[k];
+    if(i.hasAttribute('data-all')){m.set=i.checked?new Set(m.opts.map(o=>o[0])):new Set();h.querySelectorAll('input[data-v]').forEach(c=>{c.checked=i.checked;});}
+    else{if(i.checked)m.set.add(i.dataset.v);else m.set.delete(i.dataset.v);}
+    msSync(k);}
+  else updateFcounts();});
+document.addEventListener('input',e=>{const i=e.target;
+  if(i.classList.contains('mss')){const q=i.value.trim().toLowerCase(),p=i.closest('.msp');let n=0;p.querySelectorAll('li[data-t]').forEach(li=>{const show=!q||li.dataset.t.includes(q);li.hidden=!show;if(show)n++;});p.querySelector('[data-st]').textContent=n+' options shown';}
+  else updateFcounts();});
+document.addEventListener('focusin',e=>{closeMs(e.target.closest?e.target.closest('.ms'):null);});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){const p=document.querySelector('.msp:not([hidden])');if(p){const k=p.id.slice(2);closeMs();$('#b-'+k).focus();e.preventDefault();}}
+  const t=e.target.closest?e.target.closest('[role=tab]'):null;
+  if(t&&['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const nx=e.key==='Home'?'org':e.key==='End'?'con':(t.id==='tab-org'?'con':'org');setTab(nx);$('#tab-'+nx).focus();render();}});
+
+$('#cover').innerHTML=CASES.map(c=>`<section class="case" aria-labelledby="ch${c.id}"><div class="ct"><span class="n" aria-hidden="true">${c.id}</span><h3 id="ch${c.id}">${esc(c.title)}</h3><span class="tries">${c.tries.map(t=>`<button type="button" data-act="try" data-case="${c.id}" data-q="${esc(JSON.stringify(t[1]))}">Try ${esc(t[0])}</button>`).join('')}</span></div><div class="dev"><div class="lab2">Expected behavior</div><ul>${c.rules.map(r=>`<li>${esc(r)}</li>`).join('')}</ul><div class="a11yq"><strong>Keyboard and screen reader:</strong> ${esc(c.a11y)}</div>${c.open?`<div class="openq"><strong>Still open:</strong> ${esc(c.open)}</div>`:''}</div></section>`).join('');
+
+function lum(h){h=h.replace('#','');const c=[0,2,4].map(i=>parseInt(h.substr(i,2),16)/255).map(v=>v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4));return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2];}
+function ratio(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+0.05)/(Math.min(x,y)+0.05);}
+function specHtml(){
+  const sw=h=>`<span class="sw" style="background:${h}" aria-hidden="true"></span>`;
+  const colors=[['Navy','--navy','#222742','Text, headings, buttons, focus ring, icons','Brand'],['Royal blue','--royal','#007CBD','Match-card border. Text links only on pure white','Brand, restricted'],['Sky blue','--sky','#99DBFF','Badges, chips, banner background','Brand'],['Floral white','--floral','#FFF8EB','Page background','Brand'],['White','--white','#FFFFFF','Cards, inputs','Brand'],['Yellow','--yellow','#F4C849','"Similar" chip, pressed toggle (UI only, per guide)','Brand'],['Sky tint','--sky-tint','#E6F5FF','Match highlight background, hover','Tint of brand sky. Needs approval'],['Navy tint (secondary text)','--text-2','#4A4F6B','Secondary text, hints','Tint of brand navy. Needs approval'],['Control border','--ctl-border','#6B7089','Input and button borders (needs 3:1)','Tint of brand navy. Needs approval'],['Divider','--line','#DDD9CF','Decorative card dividers only','Neutral. Needs approval'],['Error red','--danger','#A32D2D','Error text and border','Outside brand palette. Needs approval']];
+  let h='<h3>What is in the prototype and what is not</h3><table><thead><tr><th scope="col">Part of the page</th><th scope="col">In the prototype?</th><th scope="col">Notes</th></tr></thead><tbody><tr><td>Search component (Home and Search page)</td><td>Yes. This is the design.</td><td>One component, shown in the blue band on Home and at the top of the Search page.</td></tr><tr><td>Search page results</td><td>Yes. This is the design.</td><td>Organization and contact results, in Cards or Table.</td></tr><tr><td>Connect header, navigation and footer</td><td>Context only</td><td>Today\'s Connect shell. The Search item replaces Public and Private Prospecting. Other items do nothing.</td></tr><tr><td>Home sections below the search band</td><td>Context only</td><td>Placeholders copied from the current Connect Home page. Only the search band is designed.</td></tr><tr><td>Dev tools bar (pages, screen size, simulate, links)</td><td>No</td><td>Amber bar at the top. For reviewing only.</td></tr><tr><td>Numbered amber markers and "What to look for" panels</td><td>No</td><td>Added by the Try buttons.</td></tr><tr><td>Requirements, use cases, design spec</td><td>No</td><td>Amber dashed sections below the prototype.</td></tr><tr><td>Made-up organizations and contacts</td><td>No</td><td>Stand in for the real search.</td></tr></tbody></table><h3>Fonts</h3><table><thead><tr><th scope="col">Use</th><th scope="col">Font</th><th scope="col">Size</th></tr></thead><tbody>'+
+   '<tr><td>Page title</td><td>Figtree Bold</td><td>28px (1.75rem)</td></tr><tr><td>Card and section headings, organization names</td><td>Figtree Semibold</td><td>16 to 18px</td></tr><tr><td>Body, labels, buttons, table text</td><td>Open Sans Regular (600 for labels and links)</td><td>16px; 14px for secondary text</td></tr></tbody></table><p class="lead">Install Figtree and Open Sans to see the brand fonts here; otherwise your browser shows a similar system font. In the React app, self-host both. The brand guide sets 14px as the minimum for digital body text, so nothing here is smaller.</p>';
+  h+='<h3>Color tokens</h3><table><thead><tr><th scope="col">Token</th><th scope="col">Value</th><th scope="col">Used for</th><th scope="col">Brand status</th></tr></thead><tbody>'+colors.map(c=>`<tr><td>${sw(c[2])}${c[0]}<br><span class="mut">${c[1]}</span></td><td>${c[2]}</td><td>${c[3]}</td><td>${c[4]}</td></tr>`).join('')+'</tbody></table>';
+  const pairs=[['Navy on white','#222742','#FFFFFF',4.5],['Navy on floral white (page)','#222742','#FFF8EB',4.5],['Navy on sky tint (match card)','#222742','#E6F5FF',4.5],['Navy on sky (badge, banner)','#222742','#99DBFF',4.5],['Navy on yellow (similar chip)','#222742','#F4C849',4.5],['White on navy (primary button)','#FFFFFF','#222742',4.5],['Navy tint on white (secondary text)','#4A4F6B','#FFFFFF',4.5],['Navy tint on floral white','#4A4F6B','#FFF8EB',4.5],['Navy tint on sky tint','#4A4F6B','#E6F5FF',4.5],['Royal blue on white (links)','#007CBD','#FFFFFF',4.5],['Error red on white','#A32D2D','#FFFFFF',4.5],['Success green on sky tint (check icon)','#2E6B1E','#E6F5FF',3],['Control border on white','#6B7089','#FFFFFF',3],['Control border on floral white','#6B7089','#FFF8EB',3],['Royal border on white','#007CBD','#FFFFFF',3],['Focus ring (navy) on floral white','#222742','#FFF8EB',3]];
+  h+='<h3>Contrast checks (WCAG 2.2 AA)</h3><table><thead><tr><th scope="col">Pairing</th><th scope="col">Ratio</th><th scope="col">Needs</th><th scope="col">Result</th></tr></thead><tbody>'+pairs.map(p=>{const r=ratio(p[1],p[2]);const ok=r>=p[3];return `<tr><td>${esc(p[0])}</td><td>${r.toFixed(2)}:1</td><td>${p[3]}:1 ${p[3]===3?'(graphics, borders)':'(text)'}</td><td class="${ok?'pass':'fail'}">${ok?'Pass':'Fail'}</td></tr>`;}).join('')+'</tbody></table><p class="lead">Do not use: orange or platinum for text, royal blue on floral white (4.30:1), royal blue on sky tint (4.09:1) or on sky (3.02:1), all below the 4.5:1 needed for text, or any color as the only way to show a meaning. Orange and yellow are for UI accents only, per the brand guide.</p>';
+  h+='<h3>Sizes and spacing</h3><table><thead><tr><th scope="col">Token</th><th scope="col">Value</th><th scope="col">Rule</th></tr></thead><tbody><tr><td>--target</td><td>32px</td><td>Minimum size of any button or icon control (WCAG 2.2 requires at least 24px)</td></tr><tr><td>--target-lg</td><td>44px</td><td>Inputs and the primary button</td></tr><tr><td>--s1 to --s6</td><td>4, 8, 12, 16, 24, 32px</td><td>Spacing scale. Use only these</td></tr><tr><td>--r-ctl, --r-card, --r-pill</td><td>8px, 12px, full</td><td>Inputs, cards, buttons (pill, as on the website)</td></tr></tbody></table>';
+  h+='<h3>Accessibility rules this prototype follows</h3><div class="rules"><ul><li>Target: WCAG 2.2 AA. It includes everything in 2.1 AA, which your brand guide names.</li><li>Every control works with the keyboard. Focus shows as a 3px navy outline with a 2px gap, and is never hidden. After pressing a control, focus stays on it.</li><li>Expandable items are buttons that say whether they are expanded or collapsed. Children are real lists.</li><li>Every link that opens a new tab says so to screen readers.</li><li>New results, empty states and errors are announced without moving focus.</li><li>Meaning is never carried by color alone. Every label, chip and state is also text.</li><li>Fields have visible labels. Placeholders are examples only.</li><li>The layout reflows to one column at 320px and works at 200% zoom. Tables scroll sideways inside their own region.</li><li>Animation respects the reduced-motion setting. There are no timeouts or hover-only controls.</li><li>Skip link at the top goes straight to the results.</li></ul></div>';
+  const T=(head,rows)=>'<table><thead><tr>'+head.map(x=>`<th scope="col">${x}</th>`).join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(x=>`<td>${x}</td>`).join('')+'</tr>').join('')+'</tbody></table>';
+  const KIND={sel:'Single select',ms:'Multi-select',rng:'From and to numbers',min:'Number',chk:'Checkbox',txt:'Text',dat:'From and to dates'};
+  const row=(l,c,d,p)=>[l,c,d,p];
+  h+='<h3>Search fields: Organizations tab</h3>'+T(['Field','Control','Desktop and tablet','Phone'],[row('Organization name','Text','Always shown','Always shown'),row('Force ID','Text, number keypad','Always shown','Always shown'),row('Location','Text','Always shown','Always shown')].concat(OF.map(f=>row(f.label+(f.help?' (with "?" help)':''),KIND[f.t]||f.t,f.g==='mid'?'Always shown':'Behind More filters','Behind More filters'))));
+  h+='<h3>Search fields: Contacts tab (public-sector contacts only)</h3>'+T(['Field','Control','Desktop and tablet','Phone'],[row('Contact name','Text','Always shown','Always shown'),row('Organization name','Text','Always shown','Always shown'),row('Force ID','Text, number keypad','Always shown','Always shown'),row('Location','Text','Always shown','Always shown')].concat(CFL.map(f=>row(f.label,KIND[f.t]||f.t,'Behind More filters','Behind More filters'))));
+  h+='<h3>Pages and navigation</h3>'+T(['Page','What it holds','How you get there'],[['Home','Search component in the blue band. Placeholder content below.','Main navigation: Home'],['Search','Search component at the top, results below.','Main navigation: Search, or press Search on Home']]);
+  h+='<h3>Responsive rules</h3>'+T(['Width of the search area','Name','Form layout','Filters','Notes'],[['Under 600px','Phone','One column. Full-width Search button.','Full-width "More filters" bar above the extra fields, with a count','Inputs 16px, targets 32px or more (inputs and Search 44px)'],['600px to 899px','Tablet','Two columns','"More filters" link at the right of the Search row','Portrait and landscape'],['900px and wider','Desktop','Three columns','"More filters" link at the right of the Search row','Content stops growing at 1100px']])+'<p class="lead">Build this with container queries (the width of the search area), not screen size, so it also works inside a narrow panel or at high zoom. Use the Screen size buttons in the dev tools bar to see each layout.</p>';
+  h+='<h3>Testing on real devices (manual)</h3><div class="rules"><ul><li><strong>Not verified in this prototype:</strong> it was checked in a simulated browser only. Real phones, tablets and screen readers have not been tested.</li><li>iPhone with Safari and VoiceOver: fields, Filters button, dropdowns, tabs, results.</li><li>Android phone with Chrome and TalkBack: the same.</li><li>iPad (portrait and landscape) and one Android tablet.</li><li>Keyboard only on desktop Chrome, Edge and Firefox. Include the dropdowns, the tabs (arrow keys) and Escape.</li><li>200% and 400% zoom, large text setting on phones, and reduced motion.</li><li>Confirm the supported device and browser list with the team before testing.</li></ul></div>';
+  h+='<h3>Decisions still open</h3><div class="rules"><ul><li>Market segment values for Private-sector organizations, and whether Nonprofit is a Sector or a segment.</li><li>Copy for the Engagement score "?" explanation.</li><li>Whether the form should start with the defaults saved on the Search Preferences page.</li><li>Contacts: typo-tolerant names, free text or lists for Department and Role, and whether a parent\'s Force ID includes its children\'s contacts.</li><li>API: it must return sector, market segment, engagement score, each match with its parent and child count, and contacts with their organization.</li><li>Supported devices and browsers.</li></ul></div>';
+  h+='<h3>Components to build once and reuse</h3><div class="rules"><ul><li><strong>SearchForm</strong>: labelled fields, primary button, Clear all, error text. The pattern for any future search.</li><li><strong>MultiSelect</strong>: button that opens a group of checkboxes, with optional search and Select all.</li><li><strong>FilterPanel</strong>: the Filters button and the fields it holds on phones.</li><li><strong>Tabs</strong>: Organizations and Contacts, with arrow-key movement.</li><li><strong>ContactCard</strong>: person, title, department, role and a link to their organization.</li><li><strong>ResultFamily</strong>: wraps a family. Holds <strong>MatchCard</strong> (highlighted match) and <strong>ContextCard</strong> (quiet parent, opens only when told to).</li><li><strong>DisclosureButton</strong>: the expand and collapse control, with count and accessible name.</li><li><strong>ChildList</strong>: rows with chips, paging and "Open full family".</li><li><strong>Chip</strong> and <strong>Badge</strong>: short text labels. Never interactive.</li><li><strong>StatusMessage</strong>: loading, empty and error states, plus the screen reader announcement.</li><li><strong>Banner</strong> and <strong>Toast</strong>: dismissible notices.</li><li><strong>DataTable</strong>: the table view, with expandable rows.</li></ul></div>';
+  return h;}
+
+const REQ=[
+ ['1. Pages and entry points',[
+  ['R1.1','The search component appears on the Home page and at the top of the Search page. It is the same component in both places, with the same fields, filters and behavior.'],
+  ['R1.2','The main navigation has one Search item that opens the Search page. It replaces Public Prospecting and Private Prospecting.'],
+  ['R1.3','Pressing Search on the Home page opens the Search page. The same terms stay in the component and the results appear below it.'],
+  ['R1.4','On the Search page, changing the terms and pressing Search updates the results in place. The browser Back button returns to the previous page.'],
+  ['R1.5','Results appear only on the Search page. The Home page never shows results.']]],
+ ['2. Two searches',[
+  ['R2.1','Organizations and Contacts are two separate searches on two tabs. Each has its own fields, filters and results, and each keeps its own terms when the user switches tabs.'],
+  ['R2.2','Contacts covers public-sector organizations only. Private-sector organizations have no contacts.']]],
+ ['3. Fields and filters',[
+  ['R3.1','Organizations shows Organization name, Force ID and Location, plus Sector, Market segment and Engagement score on desktop and tablet. Contacts shows Contact name, Organization name, Force ID and Location.'],
+  ['R3.2','Every other column in the results has its own filter under "More filters": 11 on Organizations and 12 on Contacts.'],
+  ['R3.3','On a phone, only the first three fields stay visible. The rest sit behind a full-width "More filters" bar placed above them.'],
+  ['R3.4','Fields combine with AND. Several choices inside one filter combine with OR. Sector is a single choice.'],
+  ['R3.5','Every applied filter shows as a removable tag. Nothing is applied silently.'],
+  ['R3.6','Force ID accepts numbers only and has its own field. A number typed into Organization name offers to move it to Force ID.']]],
+ ['4. Matching',[
+  ['R4.1','Organization name searches names and aliases. Force ID matches exactly, or from the first four digits. Location searches places only: city, county, state and ZIP.'],
+  ['R4.2','Partial names and small misspellings still find the organization. Close-spelling matches are labelled "Similar" and rank below exact matches.'],
+  ['R4.3','Every result states why it matched: name, alias, Force ID, location or filters.']]],
+ ['5. Organization results',[
+  ['R5.1','The hero card is the organization that best matches the search, whether it is a parent or a child. It is highlighted, labelled "Matches your search", and states why it matched. Its family is shown around it as quiet context.'],
+  ['R5.2','Parents stay closed by default. A parent opens only when a child matches directly and the parent does not, and then shows only the matching children, nested one level per card.'],
+  ['R5.3','Totals read "N matches in M families" and count only organizations that match. When more than one kind of match is present, the total splits by reason. A clear "10,000+" message shows when a limit applies.'],
+  ['R5.4','Results can be shown as Cards or as a Table. The Table has a column for every filter, including Sector, and shows "N/A" in Contacts for private-sector organizations.'],
+  ['R5.5','An organization name opens its details page in a new tab. Its address opens a map in a new tab. Large families show five children at a time with an "Open full family" link.']]],
+ ['6. Contact results',[
+  ['R6.1','Each contact result shows the person and the organization they work for. The organization is a link that opens in a new tab, and a child organization also names its parent.'],
+  ['R6.2','Contacts can be shown as Cards or as a Table. The Table has a column for every contact filter.'],
+  ['R6.3','Location, Organization name and Force ID match the organization the contact works for. A Force ID returns that exact organization\'s contacts only.']]],
+ ['7. States and feedback',[
+  ['R7.1','Every search shows a loading state with Cancel, a no-results state that explains why, or an error state with Retry that keeps the user\'s terms. The results area is never blank.'],
+  ['R7.2','"Clear all" empties every field and tag, and announces that it did.'],
+  ['R7.3','A banner explains that Organization name, Force ID and Location are now separate fields. It stays until dismissed.']]],
+ ['8. Screen sizes, accessibility and brand',[
+  ['R8.1','The layout adapts to the width of the search area: one column on phones (under 600 px), two on tablets (600 to 899 px), three on desktop.'],
+  ['R8.2','The search meets WCAG 2.2 AA: full keyboard use, visible focus, labelled fields, screen-reader announcements, and focus moving into filters when "More filters" opens.'],
+  ['R8.3','The search follows the OMNIA brand guide and feels like the Connect site. Accessibility takes priority where the two conflict.']]],
+ ['9. Data the search needs',[
+  ['R9.1','For each organization: its parent, child count, match reasons, sector, market segment and sub-type, size band, engagement score, contract and sales figures, contact count, and OPUS and pinned status.'],
+  ['R9.2','For each response: the number of matches and families, totals by reason, and whether a limit was applied.'],
+  ['R9.3','For each contact: their details and their organization with its parent.'],
+  ['R9.4','Every address carries a place ID so Location matches exactly.']]],
+ ['10. Not part of this design',[
+  ['R10.1','Radius search, adopting a search engine, and changes to saved searches, export and pinning. The Home page content other than the search band is placeholder only.']]]
+];
+$('#reqbody').innerHTML=REQ.map(g=>`<h3>${esc(g[0])}</h3><ul>${g[1].map(r=>`<li><span class="rid">${r[0]}</span>${esc(r[1])}</li>`).join('')}</ul>`).join('');
+if(DEV)$('#specbody').innerHTML=specHtml();
+buildFilters();
+showPage('home');if(window.ResizeObserver)new ResizeObserver(placeFilt).observe($('#frame'));window.addEventListener('resize',placeFilt);
+document.querySelectorAll('.ms').forEach(h=>buildMs(h.dataset.key,h));
+updateFcounts();
+render();
+</script>
+</body>
+</html>
